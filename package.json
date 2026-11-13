@@ -1,0 +1,15 @@
+{
+  "name": "revenue-skills",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Agent skills that find and fix the bugs that cost an app money.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.mjs\"",
+    "playground": "node playground/vulnerable/server.mjs"
+  }
+}
