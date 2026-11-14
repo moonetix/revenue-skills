@@ -1,0 +1,47 @@
+name: A money bug the audit missed
+description: Describe a way an app lost money that the money-audit skill does not look for or did not find.
+title: "Missed: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The audit improves one real case at a time. Describe the flaw in general terms and leave out anything that identifies a live system, a secret or a person.
+  - type: textarea
+    id: what
+    attributes:
+      label: What went wrong
+      description: Who could do what, and what was lost.
+      placeholder: A cancelled subscription kept its monthly credit grant because only the "created" event was handled.
+    validations:
+      required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: The code shape
+      description: A short, anonymized snippet or a description of the pattern. No secrets.
+      render: text
+    validations:
+      required: true
+  - type: dropdown
+    id: class
+    attributes:
+      label: Closest class
+      options:
+        - unverified-events
+        - duplicate-credit
+        - balance-races
+        - client-trust
+        - money-arithmetic
+        - refunds-and-reversals
+        - promo-and-referral-abuse
+        - payout-controls
+        - secrets-and-access
+        - ledger-and-audit-trail
+        - none of these
+    validations:
+      required: true
+  - type: textarea
+    id: run
+    attributes:
+      label: If the skill was run
+      description: Which agent and model, and what the audit said about this code.
