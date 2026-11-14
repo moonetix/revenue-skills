@@ -1,0 +1,63 @@
+{
+  "skill": "build-webhook-endpoint",
+  "triggers": {
+    "should": [
+      "Add a webhook endpoint for our payment provider. It should mark the order paid and add the credits when the payment succeeds.",
+      "Our webhook handler verifies JSON.stringify(req.body) and the signature check fails on real events, so someone commented it out. Fix it properly.",
+      "The offerwall sends a postback with a hash parameter when a user finishes an offer. Build the postback URL so nobody can fake a reward.",
+      "The provider retried a webhook after a timeout and the customer got their coins twice. Make the handler safe against retries.",
+      "We need to rotate the webhook signing secret without dropping events. How should the endpoint handle the old and the new one?",
+      "Set up the server notification endpoint for in-app purchases so a subscription renewal extends access exactly once."
+    ],
+    "should_not": [
+      "Customers who get a refund keep their credits. Make refunds take the credits back.",
+      "Send a webhook to our customers' servers whenever one of their invoices is paid, with retries and a signature they can verify.",
+      "Add a credits balance with a transaction history to our app.",
+      "Audit our payment code and tell me where we can lose money."
+    ]
+  },
+  "tasks": [
+    {
+      "id": "signed-payment-webhook-express-postgres",
+      "prompt": "This Express app on PostgreSQL creates orders with a price and a number of credits, and already has a ledger posting function. Add POST /webhooks/payments for a provider that signs each event with an X-Signature header of the form t=<unix seconds>,v1=<hex HMAC-SHA256 of t.body>. A payment.succeeded event should credit the order.",
+      "checks": [
+        "The webhook route receives the raw request body as bytes and is registered before or apart from the global JSON body parser.",
+        "The HMAC is computed over the timestamp and the raw body, and the comparison uses crypto.timingSafeEqual or an equivalent constant-time function.",
+        "A request whose timestamp is more than the configured tolerance away from the server time is answered with a 4xx status.",
+        "The signing secret is read from configuration with no default value, and the app fails at start-up when it is missing.",
+        "A migration creates an event table with a unique or primary key on the provider and event id, and the handler inserts into it in the same transaction as the ledger entry.",
+        "The handler compares the event's amount and currency with the stored order and grants the credits stored on the order, not a value from the event.",
+        "The order is marked paid by an UPDATE whose WHERE clause requires the pending status, and the credit runs only when that update changed one row.",
+        "The project's test run includes tests that send the same signed event twice and ten times concurrently and assert one credit, and they pass.",
+        "Sending the signed event with the signature header removed, and with one body field changed, both get a 4xx answer and leave the balance unchanged."
+      ]
+    },
+    {
+      "id": "hash-signed-postback-php-mysql",
+      "prompt": "Our PHP app on MySQL has postback.php, which credits users.balance from $_GET['reward'] for $_GET['user_id'] with no checks. The network's documentation says hash = HMAC-SHA256 of user_id:tx:reward:status with our postback key, status 1 is a completed offer and status 2 is a reversal. Make it safe. We do not have a ledger.",
+      "checks": [
+        "The hash is recomputed from the received user_id, tx, reward and status strings before any conversion and compared with hash_equals.",
+        "The postback key comes from configuration with no default, and a missing key stops the request before anything is credited.",
+        "No request parameter or debug switch lets a request skip the hash check.",
+        "The reward and the user id are validated as positive integers after the hash check, and a parameter sent as an array is refused.",
+        "A table with a unique or primary key on the network and the transaction id is inserted into in the same database transaction as the balance update, and the balance is updated only when the insert created a row.",
+        "MySQL error 1062 on that insert is treated as an already credited transaction and answered with the network's success response.",
+        "A request with a changed reward and the original hash is answered with a 4xx status and does not change the balance.",
+        "A status 2 postback is not answered with success unless a reversal was applied or stored."
+      ]
+    },
+    {
+      "id": "repair-skippable-verification-flask",
+      "prompt": "In this Flask app the webhook view only checks the signature when the X-Signature header is present, falls back to the secret 'changeme' when WEBHOOK_SECRET is unset, compares with ==, and the /payment/success page marks the order paid. Fix all of it without changing what a genuine event does.",
+      "checks": [
+        "The view refuses every request without a valid signature, including requests with no signature header.",
+        "The signature is verified over request.get_data() or request.data, not over a re-serialized request.json.",
+        "No default value for the secret remains in the code, and the app raises at start-up when the variable is unset.",
+        "The comparison uses hmac.compare_digest.",
+        "The /payment/success view no longer changes the order's status or any balance.",
+        "The event id is stored under a unique constraint in the same transaction as the credit, and a repeated event is answered with a 2xx status and credits nothing.",
+        "The project's tests cover a missing header, a wrong signature and a repeated event, and they pass."
+      ]
+    }
+  ]
+}
