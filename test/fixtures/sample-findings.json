@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "project": "coinjar",
+  "date": "2026-11-13",
+  "findings": [
+    {
+      "id": "MA-01",
+      "class": "unverified-events",
+      "severity": "critical",
+      "title": "A payment webhook with no signature header is accepted and credits the order",
+      "location": {
+        "file": "routes/webhooks.mjs",
+        "line": 8,
+        "snippet": "if (signature && !verifyPaylaneSignature(ctx.raw, signature, config.webhookSecret)) {"
+      },
+      "impact": "Anyone who knows or guesses an order id can post a payment event and receive the order's coins without paying.",
+      "proof": {
+        "kind": "probe",
+        "command": "node scripts/probe.mjs send webhook.json --drop-header paylane-signature --observe me.json",
+        "result": "The request answered 200 and the balance rose from 0 to 500 with no signature present."
+      },
+      "fix": "Reject the request when the header is missing: verify unconditionally before parsing the body."
+    },
+    {
+      "id": "MA-02",
+      "class": "ledger-and-audit-trail",
+      "severity": "medium",
+      "title": "Promo credits change the balance and leave no record",
+      "location": {
+        "file": "routes/promo.mjs",
+        "line": 13,
+        "snippet": "db.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').run(promo.coins, ctx.user.id);"
+      },
+      "impact": "A balance cannot be reconstructed from stored rows, so abuse of promo codes cannot be sized or undone afterwards.",
+      "proof": {
+        "kind": "trace",
+        "steps": [
+          { "file": "db.mjs", "line": 8, "snippet": "balance REAL NOT NULL DEFAULT 0,", "note": "The balance is one mutable column and no ledger table exists in the schema." },
+          { "file": "routes/promo.mjs", "line": 13, "snippet": "UPDATE users SET balance = balance + ?", "note": "The promo credit updates the column and inserts nothing." }
+        ]
+      },
+      "fix": "Insert a ledger row for every balance change in the same transaction as the update."
+    }
+  ],
+  "coverage": [
+    { "class": "unverified-events", "status": "finding", "examined": ["routes/webhooks.mjs", "routes/postback.mjs"] },
+    { "class": "duplicate-credit", "status": "clear", "examined": ["routes/webhooks.mjs"], "note": "Sample fixture only: this entry exists to exercise the validator." },
+    { "class": "balance-races", "status": "clear", "examined": ["routes/wallet.mjs"], "note": "Sample fixture only: this entry exists to exercise the validator." },
+    { "class": "client-trust", "status": "clear", "examined": ["routes/checkout.mjs"], "note": "Sample fixture only: this entry exists to exercise the validator." },
+    { "class": "money-arithmetic", "status": "clear", "examined": ["db.mjs"], "note": "Sample fixture only: this entry exists to exercise the validator." },
+    { "class": "refunds-and-reversals", "status": "clear", "examined": ["routes/webhooks.mjs"], "note": "Sample fixture only: this entry exists to exercise the validator." },
+    { "class": "promo-and-referral-abuse", "status": "clear", "examined": ["routes/promo.mjs"], "note": "Sample fixture only: this entry exists to exercise the validator." },
+    { "class": "payout-controls", "status": "not-applicable", "note": "Sample fixture only: this entry exists to exercise the validator." },
+    { "class": "secrets-and-access", "status": "clear", "examined": ["config.mjs"], "note": "Sample fixture only: this entry exists to exercise the validator." },
+    { "class": "ledger-and-audit-trail", "status": "finding", "examined": ["db.mjs", "routes/promo.mjs"] }
+  ]
+}
