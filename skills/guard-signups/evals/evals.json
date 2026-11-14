@@ -1,0 +1,57 @@
+{
+  "skill": "guard-signups",
+  "triggers": {
+    "should": [
+      "People are farming our 500 coin sign-up bonus with Gmail dot and plus variants of the same address. Stop it.",
+      "Add fake account protection to registration: disposable emails, VPS and Tor IPs, and rate limits per IP.",
+      "Our 14 day free trial gets restarted by users who delete their account and sign up again. Fix that.",
+      "Make promo codes redeemable once per account and enforce the total redemption cap properly.",
+      "One person made 40 accounts to collect our referral reward. What should the sign-up flow check, and can you build it?"
+    ],
+    "should_not": [
+      "Audit our payment webhooks and wallet code for ways users could get free credits.",
+      "Users can withdraw the same balance twice if they click the cash-out button fast enough.",
+      "Add Google and GitHub login to the sign-up page."
+    ]
+  },
+  "tasks": [
+    {
+      "id": "normalized-email-key",
+      "prompt": "This Express and PostgreSQL app gives 100 credits on sign-up. Users are collecting it repeatedly with jane.doe@gmail.com, janedoe+1@gmail.com and similar. Fix sign-up so one inbox means one account, without breaking existing users.",
+      "checks": [
+        "The users table has a normalized email column with a unique index, and the sign-up handler writes it in the same statement as the typed address.",
+        "A test shows that jane.doe@gmail.com, janedoe+1@gmail.com and J.A.N.E.Doe@googlemail.com produce the same key.",
+        "A test shows that a plus tag at outlook.com and a dot at a custom domain are left in place.",
+        "Outgoing mail still uses the address as typed, not the normalized column.",
+        "The migration adds the column as nullable and the backfill does not delete or merge existing accounts.",
+        "A second sign-up with a dot variant of an existing Gmail address answers 4xx and creates no user row."
+      ]
+    },
+    {
+      "id": "explainable-score-with-review",
+      "prompt": "Add risk screening to our Django sign-up view. We give a welcome bonus. I want disposable emails refused, datacenter and Tor addresses and rapid repeat sign-ups handled sensibly, and I do not want to lock out students who share a campus network.",
+      "checks": [
+        "Each sign-up attempt stores a row with a numeric score, one of the decisions allow, review or block, and a list of reasons that each carry a code and points.",
+        "A test asserts that the stored score equals the sum of the stored reasons' points.",
+        "A sign-up from an address in a fixture datacenter range creates the account and leaves the bonus in a held state with a zero balance.",
+        "A test creates at least 20 accounts with different emails from one public address and none of them is refused.",
+        "A disposable-domain sign-up answers 4xx, creates no user row, and the response contains a hint but no score and no list name.",
+        "The client address is taken from a forwarding header only when the socket peer is in a configured list of trusted proxies.",
+        "The disposable list and the address ranges are read from local files or tables; no HTTP request is made during the sign-up request."
+      ]
+    },
+    {
+      "id": "promo-once-with-atomic-cap",
+      "prompt": "Our Laravel app has a promo code endpoint. The same account can redeem SPRING250 over and over, and the 500 redemption cap is checked with a count query. Make it correct, and show me it holds under concurrent requests.",
+      "checks": [
+        "A redemptions table has a unique or primary key on the pair of code and user.",
+        "The cap is enforced by a conditional UPDATE on a counter column (or an equivalent single atomic statement), not by a COUNT query followed by an insert.",
+        "The redemption insert, the cap update and the credit run inside one database transaction.",
+        "The credited amount is read from the promo code's stored row, not from the request.",
+        "Running the probe script in replay mode with 3 requests for one account shows one 2xx answer and a balance change equal to one redemption.",
+        "Running the probe script in race mode with 10 parallel requests for one fresh account shows a balance change equal to one redemption.",
+        "A test with a code capped at 2 and three different accounts ends with exactly 2 redemption rows."
+      ]
+    }
+  ]
+}
