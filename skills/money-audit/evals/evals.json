@@ -1,0 +1,50 @@
+{
+  "skill": "money-audit",
+  "triggers": {
+    "should": [
+      "Audit this repo for ways users could get free credits before we launch next week.",
+      "Can someone replay our Stripe webhook and get the order credited twice?",
+      "We lost about $400 in gift card payouts last month and I can't tell how. Can you find the hole?",
+      "Review the postback handler and the withdraw endpoint, I want to know if they can be cheated.",
+      "Is my points system safe? People can earn, spend, transfer and cash out.",
+      "I just added a promo code endpoint, check that it can't be farmed."
+    ],
+    "should_not": [
+      "Add a pricing page with three tiers and a monthly/yearly toggle.",
+      "Run a general security scan for XSS and missing headers on the marketing site.",
+      "Our Stripe checkout button does nothing when clicked, can you debug the frontend?",
+      "Write unit tests for the date formatting helpers."
+    ]
+  },
+  "tasks": [
+    {
+      "id": "full-audit-of-the-practice-app",
+      "prompt": "Run a full money audit of the app in playground/vulnerable and write the report.",
+      "checks": [
+        "money-audit/money-map.md, money-audit/findings.json and money-audit/REPORT.md exist in the audited project.",
+        "scripts/validate-findings.mjs prints VALID for the findings file with the audited project as --root.",
+        "node playground/score.mjs on the findings file reports at least 14 of the 17 planted bugs as found.",
+        "No file of the audited app was modified.",
+        "No app process is left running when the audit ends."
+      ]
+    },
+    {
+      "id": "focused-check-of-one-handler",
+      "prompt": "Look only at playground/vulnerable/routes/postback.mjs. Can a postback be forged or replayed?",
+      "checks": [
+        "The answer names the debug=1 bypass of the hash check with its file and line.",
+        "The answer names the check-then-insert duplicate window and the reversal that is not tied to its credit.",
+        "No money-audit folder or other file is created, because this is a focused check."
+      ]
+    },
+    {
+      "id": "clean-code-yields-no-findings",
+      "prompt": "Run a full money audit of the app in playground/fixed.",
+      "checks": [
+        "scripts/validate-findings.mjs prints VALID for the findings file.",
+        "No finding is rated critical or high.",
+        "Each class recorded as clear names the guard that makes it safe, such as the unique (kind, ref) ledger key or the conditional debit."
+      ]
+    }
+  ]
+}
