@@ -1,0 +1,59 @@
+{
+  "skill": "add-offerwall",
+  "triggers": {
+    "should": [
+      "Add an offerwall to our rewards site so users can earn coins by completing offers.",
+      "We got approved by an offer network. They need a postback URL from us. Can you build the endpoint that credits the user?",
+      "Users are getting credited twice for the same offer when the network retries the postback. Fix it.",
+      "The network sent us chargebacks for 40 conversions but our users kept the points. How do we handle reversal postbacks?",
+      "Our Discord bot should give members a private link to earn server coins from offers, and credit them when the callback arrives."
+    ],
+    "should_not": [
+      "Verify the signature on our payment provider's webhook before marking the order as paid.",
+      "How many coins per dollar should we pay, and what share of each offer should go to the user?",
+      "Add rewarded video ads from an ad mediation SDK to our Unity game."
+    ]
+  },
+  "tasks": [
+    {
+      "id": "postback-with-ledger-postgres",
+      "prompt": "This Express app on PostgreSQL already has a ledger with a postEntry function. Add an offerwall: an Earn page with the wall in an iframe and the postback endpoint. The network signs tx:user:payout:status with HMAC-SHA256 and sends status 1 for a credit and 2 for a reversal. We pay users 60% at 1000 coins per dollar.",
+      "checks": [
+        "The wall URL is built in server code from the session's user id, and the endpoint or page ignores a user_id sent in the request.",
+        "The link secret and the postback secret are read from the environment with no fallback value, and neither appears in any file served to the browser.",
+        "The postback handler compares the HMAC in constant time before any database query, and has no parameter or flag that skips the check.",
+        "A migration creates a table keyed by network and transaction id that stores the account, the payout and the coins credited.",
+        "The credited amount is computed in server code from the signed payout, the configured rate and the share with integer arithmetic, and the ledger entry is posted only when the conversion insert created a row.",
+        "A reversal posts the stored coin amount as a negative entry to the stored account under its own kind, and a second reversal for the same transaction posts nothing.",
+        "The project's tests include the same postback sent twice and sent concurrently, a tampered payout, a reversal sent twice and a reversal for an unknown transaction, and they pass.",
+        "A function returns the withdrawable amount excluding offer earnings younger than the configured hold, and a test shows a fresh earning is not withdrawable."
+      ]
+    },
+    {
+      "id": "fix-duplicate-and-ignored-reversals-php",
+      "prompt": "Our PHP site on MySQL has postback.php. It checks an md5 of the parameters plus a secret, looks up the transaction id in a table and credits users.balance if it is not there. Users get double credits sometimes and reversals (status=2) do nothing. There is no ledger and I can't add one this week. Fix the postback.",
+      "checks": [
+        "The transactions table has a primary key or unique index on the network transaction id, added by a migration that handles existing duplicate rows.",
+        "The handler inserts the transaction and treats MySQL error 1062 as already processed, instead of selecting first and inserting afterwards.",
+        "The balance update and the insert run in one database transaction, and the balance is updated only when the insert succeeded.",
+        "The hash comparison uses hash_equals, and the secret has no default value in the code.",
+        "A status 2 postback subtracts the amount stored for that transaction from the account stored for it, only when the stored status changed from credited to reversed.",
+        "The handler answers with a 2xx status for a duplicate credit and for a duplicate reversal, and with a 5xx status when the database write fails.",
+        "The answer to the user states that a unique key on the transaction id is the minimum and that a ledger is the next step."
+      ]
+    },
+    {
+      "id": "mobile-app-wall-link-and-hold",
+      "prompt": "Our React Native app has a Django backend with session tokens. Show the offerwall in the app. Right now the app builds the wall URL itself with a salt from its config file, and users can withdraw coins the moment they are credited. Fix both.",
+      "checks": [
+        "The link salt is removed from the app's code and configuration, and a search of the mobile code finds no signing secret.",
+        "A Django view that requires authentication returns the wall URL for request.user, with a Cache-Control header of private, no-store, and does not read a user id from the request.",
+        "The app requests the URL from that view each time the wall is opened and does not compute a signature.",
+        "No client callback or event credits coins: the app reloads the balance from the backend after the wall closes.",
+        "The withdrawal view computes the withdrawable amount inside the same transaction that debits the balance, and refuses a request above it.",
+        "A test credits an offer and asserts that a withdrawal of those coins is refused before the hold has passed and accepted after it.",
+        "The hold length is read from one configuration value, and the answer states the default used and that it should be resized from the app's own reversal data."
+      ]
+    }
+  ]
+}
