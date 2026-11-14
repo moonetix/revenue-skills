@@ -1,0 +1,59 @@
+{
+  "skill": "add-usage-credits",
+  "triggers": {
+    "should": [
+      "Add credits to our AI writing app. Users buy packs of credits and every generation should cost some, depending on how many tokens it used.",
+      "Each API call to our image endpoint should use up credits from the customer's prepaid balance, and they should get a 402 when they run out.",
+      "People open ten tabs and start ten generations with one credit left, and all ten run. How do I stop that?",
+      "When a transcription job crashes halfway the user's credits are gone anyway. Make failed jobs give the credits back, and make sure a retry is not charged twice.",
+      "Our Pro plan should include 2,000 credits a month that reset at renewal, on top of the credit packs people can buy."
+    ],
+    "should_not": [
+      "Verify the signature on the payment provider's webhook before we mark the order as paid.",
+      "Let users cash out their earned balance to PayPal with a minimum of 10 dollars.",
+      "Rate limit our public API to 100 requests per minute per API key."
+    ]
+  },
+  "tasks": [
+    {
+      "id": "fixed-cost-credits-on-postgres",
+      "prompt": "This Express app on PostgreSQL sells PDF exports. Add prepaid credits: packs are bought through the existing verified payment webhook, an export costs 2 credits, and users can see their balance.",
+      "checks": [
+        "A migration creates a ledger table for credits with a unique constraint on the kind and reference columns, or extends an existing ledger, and no handler updates a credits counter directly.",
+        "The pack is granted inside the handler of the verified payment event with the order id as the reference, and delivering that event twice raises the balance once.",
+        "The export cost is read from a server-side table, and a cost or credits field in the request body does not change the amount charged.",
+        "The debit is a single UPDATE with the balance condition in its WHERE clause, or runs under a row lock, and the code checks the number of rows changed before the export starts.",
+        "The export handler takes an idempotency key, and the project's tests show that the same key sent twice is charged once and the export runs once.",
+        "The tests include a failing export, after which the balance equals the balance before the request.",
+        "A request from an account with fewer than 2 credits is answered with status 402 and no export is rendered."
+      ]
+    },
+    {
+      "id": "reserve-around-model-call",
+      "prompt": "Our FastAPI service calls a language model and charges credits by tokens used, but only after the response is back. Users with almost no credits start many requests at once and end up far below zero. Fix it.",
+      "checks": [
+        "Before the model is called, a reservation row is created and the account's reserved amount rises through one conditional statement that compares balance minus reserved with the bound.",
+        "The reserved amount is computed from the same output limit that is passed to the model call.",
+        "When the model call succeeds, one usage entry is posted for the cost computed from the usage the provider reported, never more than the reserved amount, and the reserved amount falls back.",
+        "When the model call raises or times out with nothing delivered, the reservation is released and the balance is unchanged.",
+        "A second commit or release of the same reservation changes neither the balance nor the reserved amount.",
+        "A scheduled job or command releases open reservations whose expiry time has passed, and a test covers it.",
+        "A test starts several requests in parallel against a balance that covers one bound and asserts that only one model call was made.",
+        "No database transaction is held open while the model call is in flight."
+      ]
+    },
+    {
+      "id": "monthly-allowance-with-expiry",
+      "prompt": "Add a monthly allowance of 500 credits to our paid plan in this Laravel app on MySQL. Unused allowance credits expire at the end of the billing period, purchased credits never expire, and allowance credits should be used up first.",
+      "checks": [
+        "The allowance is granted by the handler of the verified renewal event with a reference built from the subscription id and the period, and the same event delivered twice grants once.",
+        "Each positive entry has a grant row with an expiry time, which is empty for purchased credits and the period end for allowance credits.",
+        "A debit lowers the remaining amount of the grants ordered by soonest expiry, with grants that never expire last.",
+        "An expiry job posts one ledger entry per expired grant for its remaining credits, through the same function as every other balance change, and running the job twice posts nothing the second time.",
+        "The ledger insert treats MySQL error 1062 as an entry that is already posted, and does not use INSERT IGNORE.",
+        "The credits endpoint returns the available amount and the amount and date of the next expiry, read from the database at request time.",
+        "For every account in the test database the cached balance equals the sum of its ledger entries after the tests have run."
+      ]
+    }
+  ]
+}
