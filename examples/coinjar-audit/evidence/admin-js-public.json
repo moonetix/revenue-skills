@@ -1,0 +1,16 @@
+{
+  "probe": "send",
+  "request": "GET http://127.0.0.1:8742/public/admin.js",
+  "edits": [],
+  "sent": 1,
+  "statuses": {
+    "200": 1
+  },
+  "samples": [
+    {
+      "status": 200,
+      "body": "const ADMIN_KEY = '{{ADMIN_KEY}}';\n\nasync function grant(userId, amount) {\n  const res = await fetch('/admin/grant', {\n    method: 'POST',\n    headers: { 'content-type': 'application/json', 'x-admin-key': ADMIN_KEY },\n    body: JSON.stringify({ user_id: userId, amount }),\n  });\n  return res.json();\n..."
+    }
+  ],
+  "ms": 43
+}

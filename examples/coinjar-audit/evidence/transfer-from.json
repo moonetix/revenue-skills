@@ -1,0 +1,35 @@
+{
+  "probe": "send",
+  "request": "POST http://127.0.0.1:8742/api/transfer",
+  "edits": [
+    "set-body from=14",
+    "set-body amount=500"
+  ],
+  "sent": 1,
+  "statuses": {
+    "200": 1
+  },
+  "samples": [
+    {
+      "status": 200,
+      "body": "{\"sent\":500}"
+    }
+  ],
+  "ms": 5,
+  "observed": [
+    {
+      "name": "balance",
+      "path": "balance",
+      "before": 0,
+      "after": 500,
+      "delta": 500
+    },
+    {
+      "name": "victim balance",
+      "path": "balance",
+      "before": 500,
+      "after": 0,
+      "delta": -500
+    }
+  ]
+}

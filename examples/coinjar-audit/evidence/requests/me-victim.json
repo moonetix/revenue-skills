@@ -1,0 +1,1 @@
+{ "name": "victim balance", "url": "http://127.0.0.1:8742/api/me", "headers": { "authorization": "Bearer {{VICTIM_TOKEN}}" }, "path": "balance" }

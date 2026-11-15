@@ -1,0 +1,32 @@
+{
+  "probe": "send",
+  "request": "GET http://127.0.0.1:8742/postback/offerly?user_id=23&tx=audit-hold-1&reward=1000&status=2&hash=538a224372a948c6bcae3434656717d3598430dda2daa018cf6e63295a70a62a",
+  "edits": [],
+  "sent": 1,
+  "statuses": {
+    "200": 1
+  },
+  "samples": [
+    {
+      "status": 200,
+      "body": "OK"
+    }
+  ],
+  "ms": 2,
+  "observed": [
+    {
+      "name": "balance",
+      "path": "balance",
+      "before": 0,
+      "after": -1000,
+      "delta": -1000
+    },
+    {
+      "name": "gift cards paid",
+      "path": "payouts.length",
+      "before": 1,
+      "after": 1,
+      "delta": 0
+    }
+  ]
+}

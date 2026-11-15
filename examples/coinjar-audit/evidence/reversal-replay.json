@@ -1,0 +1,23 @@
+{
+  "probe": "replay",
+  "request": "GET http://127.0.0.1:8742/postback/offerly?user_id=8&tx=audit-rev-1&reward=200&status=2&hash=a9222540d492ff8c69e0fbf46599932b70f17874ca74c0555bc02f6a583870b4",
+  "edits": [],
+  "sent": 3,
+  "statuses": {
+    "200": 3
+  },
+  "samples": [
+    {
+      "status": 200,
+      "body": "OK"
+    }
+  ],
+  "ms": 10,
+  "observed": {
+    "name": "balance",
+    "path": "balance",
+    "before": 200,
+    "after": -400,
+    "delta": -600
+  }
+}

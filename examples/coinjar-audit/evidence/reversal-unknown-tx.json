@@ -1,0 +1,23 @@
+{
+  "probe": "send",
+  "request": "GET http://127.0.0.1:8742/postback/offerly?user_id=8&tx=audit-never-credited&reward=300&status=2&hash=c719071f41a16cece2839c27dbfba1ee8d9b283aed6a9d5ba845a647c27a487c",
+  "edits": [],
+  "sent": 1,
+  "statuses": {
+    "200": 1
+  },
+  "samples": [
+    {
+      "status": 200,
+      "body": "OK"
+    }
+  ],
+  "ms": 4,
+  "observed": {
+    "name": "balance",
+    "path": "balance",
+    "before": -400,
+    "after": -700,
+    "delta": -300
+  }
+}

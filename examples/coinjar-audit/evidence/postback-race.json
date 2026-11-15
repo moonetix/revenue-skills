@@ -1,0 +1,23 @@
+{
+  "probe": "race",
+  "request": "GET http://127.0.0.1:8742/postback/offerly?user_id=7&tx=audit-race-1&reward=200&status=1&hash=d5c6e1ba85e1bfac28c2bca86958f9f6fa1dfa2e121b0c762d7d6db8bc0dbfc4",
+  "edits": [],
+  "sent": 10,
+  "statuses": {
+    "200": 10
+  },
+  "samples": [
+    {
+      "status": 200,
+      "body": "OK"
+    }
+  ],
+  "ms": 36,
+  "observed": {
+    "name": "balance",
+    "path": "balance",
+    "before": 0,
+    "after": 2000,
+    "delta": 2000
+  }
+}

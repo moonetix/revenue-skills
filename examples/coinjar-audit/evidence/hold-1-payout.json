@@ -1,0 +1,34 @@
+{
+  "probe": "send",
+  "request": "POST http://127.0.0.1:8742/api/payouts",
+  "edits": [
+    "set-body amount=1000"
+  ],
+  "sent": 1,
+  "statuses": {
+    "200": 1
+  },
+  "samples": [
+    {
+      "status": 200,
+      "body": "{\"usd\":10,\"code\":\"GC-4ED2C56B1EAE\"}"
+    }
+  ],
+  "ms": 26,
+  "observed": [
+    {
+      "name": "balance",
+      "path": "balance",
+      "before": 1000,
+      "after": 0,
+      "delta": -1000
+    },
+    {
+      "name": "gift cards paid",
+      "path": "payouts.length",
+      "before": 0,
+      "after": 1,
+      "delta": 1
+    }
+  ]
+}

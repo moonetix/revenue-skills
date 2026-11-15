@@ -1,0 +1,18 @@
+{
+  "probe": "send",
+  "request": "POST http://127.0.0.1:8742/api/checkout",
+  "edits": [
+    "set-body coins=1000000"
+  ],
+  "sent": 1,
+  "statuses": {
+    "201": 1
+  },
+  "samples": [
+    {
+      "status": 201,
+      "body": "{\"order_id\":\"ord_59c61ed1a17a1652\",\"coins\":1000000,\"price_cents\":499,\"pay_url\":\"https://pay.paylane.test/checkout/ord_59c61ed1a17a1652\"}"
+    }
+  ],
+  "ms": 45
+}

@@ -1,0 +1,39 @@
+{
+  "probe": "race",
+  "request": "POST http://127.0.0.1:8742/api/transfer",
+  "edits": [
+    "set-body amount=500"
+  ],
+  "sent": 10,
+  "statuses": {
+    "200": 1,
+    "402": 9
+  },
+  "samples": [
+    {
+      "status": 200,
+      "body": "{\"sent\":500}"
+    },
+    {
+      "status": 402,
+      "body": "{\"error\":\"insufficient_balance\"}"
+    }
+  ],
+  "ms": 30,
+  "observed": [
+    {
+      "name": "balance",
+      "path": "balance",
+      "before": 500,
+      "after": 0,
+      "delta": -500
+    },
+    {
+      "name": "victim balance",
+      "path": "balance",
+      "before": 400,
+      "after": 900,
+      "delta": 500
+    }
+  ]
+}

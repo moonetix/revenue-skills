@@ -1,0 +1,23 @@
+{
+  "probe": "replay",
+  "request": "POST http://127.0.0.1:8742/api/promo",
+  "edits": [],
+  "sent": 15,
+  "statuses": {
+    "200": 15
+  },
+  "samples": [
+    {
+      "status": 200,
+      "body": "{\"added\":100}"
+    }
+  ],
+  "ms": 40,
+  "observed": {
+    "name": "balance",
+    "path": "balance",
+    "before": 0,
+    "after": 1500,
+    "delta": 1500
+  }
+}

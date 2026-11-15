@@ -1,0 +1,23 @@
+{
+  "probe": "replay",
+  "request": "POST http://127.0.0.1:8742/webhooks/paylane",
+  "edits": [],
+  "sent": 3,
+  "statuses": {
+    "200": 3
+  },
+  "samples": [
+    {
+      "status": 200,
+      "body": "{\"received\":true}"
+    }
+  ],
+  "ms": 14,
+  "observed": {
+    "name": "balance",
+    "path": "balance",
+    "before": 0,
+    "after": 1500,
+    "delta": 1500
+  }
+}

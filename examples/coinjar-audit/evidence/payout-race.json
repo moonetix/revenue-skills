@@ -1,0 +1,44 @@
+{
+  "probe": "race",
+  "request": "POST http://127.0.0.1:8742/api/payouts",
+  "edits": [],
+  "sent": 5,
+  "statuses": {
+    "200": 5
+  },
+  "samples": [
+    {
+      "status": 200,
+      "body": "{\"usd\":5,\"code\":\"GC-D1451B684820\"}"
+    },
+    {
+      "status": 200,
+      "body": "{\"usd\":5,\"code\":\"GC-F58BF91BBBEA\"}"
+    },
+    {
+      "status": 200,
+      "body": "{\"usd\":5,\"code\":\"GC-757EDD87B252\"}"
+    },
+    {
+      "status": 200,
+      "body": "{\"usd\":5,\"code\":\"GC-69B57EAF68D2\"}"
+    }
+  ],
+  "ms": 33,
+  "observed": [
+    {
+      "name": "balance",
+      "path": "balance",
+      "before": 500,
+      "after": -2000,
+      "delta": -2500
+    },
+    {
+      "name": "gift cards paid",
+      "path": "payouts.length",
+      "before": 0,
+      "after": 5,
+      "delta": 5
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "probe": "race",
+  "request": "POST http://127.0.0.1:8742/api/spend",
+  "edits": [],
+  "sent": 10,
+  "statuses": {
+    "200": 10
+  },
+  "samples": [
+    {
+      "status": 200,
+      "body": "{\"item\":\"theme\",\"balance\":0}"
+    }
+  ],
+  "ms": 39,
+  "observed": {
+    "name": "balance",
+    "path": "balance",
+    "before": 300,
+    "after": 0,
+    "delta": -300
+  }
+}

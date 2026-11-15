@@ -1,0 +1,1 @@
+{ "method": "POST", "url": "http://127.0.0.1:8742/api/transfer", "headers": { "authorization": "Bearer {{TOKEN}}" }, "body": { "to": "{{TO}}", "amount": 100 } }

@@ -1,0 +1,25 @@
+{
+  "probe": "send",
+  "request": "GET http://127.0.0.1:8742/postback/offerly?user_id=6&tx=audit-forged-1&reward=100000&status=1&debug=1",
+  "edits": [
+    "set-query debug=1"
+  ],
+  "sent": 1,
+  "statuses": {
+    "200": 1
+  },
+  "samples": [
+    {
+      "status": 200,
+      "body": "OK"
+    }
+  ],
+  "ms": 20,
+  "observed": {
+    "name": "balance",
+    "path": "balance",
+    "before": 0,
+    "after": 100000,
+    "delta": 100000
+  }
+}

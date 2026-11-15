@@ -1,0 +1,1 @@
+{ "method": "GET", "url": "http://127.0.0.1:8742/postback/offerly?user_id={{USER_ID}}&tx=audit-forged-1&reward=100000&status=1" }

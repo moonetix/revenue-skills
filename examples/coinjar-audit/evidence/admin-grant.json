@@ -1,0 +1,23 @@
+{
+  "probe": "send",
+  "request": "POST http://127.0.0.1:8742/admin/grant",
+  "edits": [],
+  "sent": 1,
+  "statuses": {
+    "200": 1
+  },
+  "samples": [
+    {
+      "status": 200,
+      "body": "{\"granted\":100000}"
+    }
+  ],
+  "ms": 9,
+  "observed": {
+    "name": "balance",
+    "path": "balance",
+    "before": 0,
+    "after": 100000,
+    "delta": 100000
+  }
+}

@@ -1,0 +1,1 @@
+{ "name": "gift cards paid", "url": "http://127.0.0.1:8742/api/payouts", "headers": { "authorization": "Bearer {{TOKEN}}" }, "path": "payouts.length" }
