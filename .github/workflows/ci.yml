@@ -23,6 +23,8 @@ jobs:
         run: npm run validate
       - name: Exploits work on the vulnerable app and fail on the fixed one
         run: npm test
+      - name: The demo page builds from a fresh run of every attack
+        run: npm run site
 
   scripts-on-node-20:
     runs-on: ubuntu-latest
