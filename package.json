@@ -10,6 +10,8 @@
   },
   "scripts": {
     "test": "node --test \"test/*.test.mjs\"",
+    "validate": "node scripts/validate-skills.mjs && node scripts/sync-shared.mjs --check",
+    "sync": "node scripts/sync-shared.mjs",
     "playground": "node playground/vulnerable/server.mjs"
   }
 }

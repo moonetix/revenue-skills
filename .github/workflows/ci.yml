@@ -19,5 +19,23 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
+      - name: Skills follow the specification and the shared scripts are in sync
+        run: npm run validate
       - name: Exploits work on the vulnerable app and fail on the fixed one
         run: npm test
+
+  scripts-on-node-20:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+      - name: The bundled scripts run on Node 20
+        run: |
+          node skills/money-audit/scripts/validate-findings.mjs test/fixtures/sample-findings.json --root playground/vulnerable
+          node skills/money-audit/scripts/render-report.mjs test/fixtures/sample-findings.json --root playground/vulnerable > /dev/null
+          node skills/money-audit/scripts/probe.mjs send '{"url":"http://127.0.0.1:9/"}'
+          node playground/score.mjs test/fixtures/sample-findings.json
+          node skills/design-reward-economy/scripts/economy-check.mjs skills/design-reward-economy/assets/economy.example.json > /dev/null
