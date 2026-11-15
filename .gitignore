@@ -1,4 +1,5 @@
 node_modules/
+_site/
 /money-audit/
 *.log
 .DS_Store
