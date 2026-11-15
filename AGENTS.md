@@ -12,7 +12,9 @@ This file is for coding agents and people changing the repository itself. To use
 | `playground/vulnerable/`, `playground/fixed/` | The practice app with 17 planted money bugs, and the same app with all of them closed. |
 | `playground/answers.json`, `playground/score.mjs` | The answer key and the scorer for an audit of `playground/vulnerable/`. |
 | `test/` | `node --test` suites: exploits against both apps, the scripts, and the repository rules. |
-| `scripts/` | `validate-skills.mjs` and `sync-shared.mjs`. |
+| `examples/coinjar-audit/` | The output of one audit of `playground/vulnerable/`, kept as it was written. Do not edit it by hand; replace it with a new run. |
+| `scripts/` | `validate-skills.mjs`, `sync-shared.mjs` and `build-site.mjs`. |
+| `site/` | The demo page. `scripts/build-site.mjs` records every attack against both apps and writes `_site/`. |
 
 ## Commands
 

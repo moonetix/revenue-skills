@@ -10,6 +10,8 @@
 
 Maintained by [Moonetix](https://moonetix.com).
 
+**[Open the live demo](https://moonetix.github.io/revenue-skills/)**: 17 attacks on a practice app, each sent to the broken and to the fixed version, and the full report an agent wrote with the audit skill.
+
 An app that sells credits, grants points or pays out rewards tends to lose money in the same few ways. A webhook nobody verifies. A credit that lands twice when the provider retries. A balance that two requests spend at the same moment. A refund that leaves the goods behind. None of it shows up in a demo, and all of it shows up in production.
 
 These skills teach a coding agent to find those flaws in your code and to build the replacement. They work with Claude Code, Cursor, Codex, GitHub Copilot, Gemini CLI, OpenCode, Goose, Amp and any other agent that reads the [Agent Skills](https://agentskills.io) format.
@@ -153,6 +155,8 @@ Before a release we run the audit the way a user would: a fresh agent session, a
 | [`playground/vulnerable/`](playground/vulnerable/) | 17 of 17 planted bugs found. 24 findings, all accepted by the validator, 20 of them proved with live requests. The one finding outside the answer key was a real weakness. |
 | [`playground/fixed/`](playground/fixed/) | 1 finding, nine classes clear. The finding was real: a refund that arrived before its payment left the coins in the account. It is fixed now, and has a test. |
 
+The report of the first run is in [`examples/coinjar-audit/`](examples/coinjar-audit/) as the agent wrote it, with the saved probe outputs, and the [live demo](https://moonetix.github.io/revenue-skills/#report) lets you filter it. It is a spoiler for the practice app.
+
 The practice app was written for this repository, so read this as an end to end check and not as a benchmark on unfamiliar code. Results vary with the agent and the model. Measure your own with the scorer below.
 
 ## The practice app
@@ -184,8 +188,10 @@ Details are in the [playground README](playground/README.md). The [answer key](p
 ```
 skills/        ten skills, one folder each: SKILL.md, references/, scripts/, evals/
 playground/    the practice app (vulnerable and fixed), answer key, scorer
+examples/      a full audit of the practice app: findings, report, saved probe outputs
 test/          exploits against both apps, tests for the scripts, repository rules
-scripts/       skill validation and shared-script sync
+scripts/       skill validation, shared-script sync, the build of the demo page
+site/          the demo page; its data is recorded from both apps at build time
 ```
 
 ```bash

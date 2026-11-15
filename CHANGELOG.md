@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Every skill carries the repository version in its `metadata.version`.
 
+## [Unreleased]
+
+### Added
+
+- A [demo page](https://moonetix.github.io/revenue-skills/). Its build starts both versions of Coinjar, sends every attack to each over HTTP and records the requests and the answers, so the page shows what the apps did and not a description of it.
+- `examples/coinjar-audit/`: the findings, the report and the saved probe outputs of a `money-audit` run on the first version of Coinjar. A test checks the findings with the validator and the scorer.
+
 ## [1.0.0] - 2026-11-15
 
 ### Added
