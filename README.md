@@ -1,6 +1,6 @@
 # revenue-skills plugin
 
-Agent skills that find and fix the bugs that cost an app money. This branch holds only the files of the plugin, version 1.3.0: the plugin manifests, the skills, the license and the security policy. The source, the tests, the practice app, the trials and the demo page are on the main branch of [moonetix/revenue-skills](https://github.com/moonetix/revenue-skills). A workflow rebuilds this branch from each release tag, so changes go to the main branch.
+Agent skills that find and fix the bugs that cost an app money. This branch holds only the files of the plugin, version 1.3.1: the plugin manifests, the skills, the license and the security policy. The source, the tests, the practice app, the trials and the demo page are on the main branch of [moonetix/revenue-skills](https://github.com/moonetix/revenue-skills). A workflow rebuilds this branch from each release tag, so changes go to the main branch.
 
 ## Install in Claude Code
 
