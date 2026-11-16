@@ -5,7 +5,7 @@ license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.2.0"
+  version: "1.3.0"
 ---
 
 # Add usage credits
@@ -137,7 +137,7 @@ Done when:
 
 ## Out of scope / do not
 
-- This skill does not verify payment events, take payments or process refunds as such. Those are the `build-webhook-endpoint` and `handle-refunds-and-reversals` skills. It is not a subscription billing system and not postpaid, invoice-based metering. Keeping free sign-up credits from being farmed with new accounts is the `guard-signups` skill.
+- This skill does not verify payment events, take payments or process refunds as such. Those are the `build-webhook-endpoint` and `handle-refunds-and-reversals` skills. It is not a subscription billing system and not postpaid, invoice-based metering: the plan, its access, its renewals and when its allowance is granted are the `add-subscriptions` skill. Keeping free sign-up credits from being farmed with new accounts is the `guard-signups` skill.
 - Do not run the work and charge afterwards without a reservation. Parallel jobs all pass a balance check that none of them has lowered yet.
 - Do not charge an estimate up front and call it final, and do not bill more than was reserved.
 - Do not hold a database transaction open across the model or API call. Reserve, commit the transaction, work, then settle in a second transaction.

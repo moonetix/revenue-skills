@@ -5,7 +5,7 @@ license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.2.0"
+  version: "1.3.0"
 ---
 
 # Guard sign-ups
@@ -125,7 +125,7 @@ Done when:
 - **Do not apply address lists to webhook or postback endpoints.** Their callers are servers by design; verify signatures there.
 - **Do not show users the score or the rule they tripped.**
 
-Related work in this collection: the `build-ledger` skill for the balance these grants credit, and the `add-payouts` skill for keeping bonus value out of withdrawals.
+Related work in this collection: the `build-ledger` skill for the balance these grants credit, the `add-payouts` skill for keeping bonus value out of withdrawals, and the `add-subscriptions` skill for the subscription a trial starts.
 
 ## Further reading
 

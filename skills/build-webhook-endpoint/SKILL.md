@@ -5,14 +5,14 @@ license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.2.0"
+  version: "1.3.0"
 ---
 
 # Build a webhook endpoint
 
 This skill produces the endpoint through which another company's server tells the app that money moved: a payment succeeded, a subscription renewed, a user completed an offer. It prevents three failures. A message nobody verified credits an account because it said so. A genuine message credits twice because it was delivered twice. A genuine message credits the wrong thing because the handler believed its content instead of the app's own records.
 
-**Which of the three skills.** Use this one for payment webhooks and app store notifications, and for any other signed event that grants something. For a whole offerwall (the wall link, the postback, its reversals and the hold), use `add-offerwall`, which builds its postback by the same rules. To take credits back on refunds, chargebacks and reversed conversions, use `handle-refunds-and-reversals` after this one.
+**Which of the three skills.** Use this one for payment webhooks and app store notifications, and for any other signed event that grants something. For a whole offerwall (the wall link, the postback, its reversals and the hold), use `add-offerwall`, which builds its postback by the same rules. To take credits back on refunds, chargebacks and reversed conversions, use `handle-refunds-and-reversals` after this one. For the access a subscription gives through renewals, failed payments and cancellations, use `add-subscriptions` on top of this endpoint.
 
 ## Before writing code
 

@@ -5,14 +5,14 @@ license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.2.0"
+  version: "1.3.0"
 ---
 
 # Handle refunds and reversals
 
 This skill produces the code that follows money when it goes back: a refund, a chargeback, a conversion a network takes back. Each reversal is computed from the credit it undoes, applied once, and followed through to everything that credit caused. It prevents the loop in which a user buys, spends or withdraws, gets the money back and keeps the goods. It also prevents the opposite failures: a reversal that subtracts twice, or from the wrong account.
 
-**Which of the three skills.** Use this one when something already credited must be taken back: a refund, a chargeback, a revocation or a reversed conversion, with everything the credit caused. To receive and verify the event that grants, use `build-webhook-endpoint`. A new offerwall gets its reversal postbacks from `add-offerwall`; this skill fixes reversals in an existing one.
+**Which of the three skills.** Use this one when something already credited must be taken back: a refund, a chargeback, a revocation or a reversed conversion, with everything the credit caused. To receive and verify the event that grants, use `build-webhook-endpoint`. A new offerwall gets its reversal postbacks from `add-offerwall`; this skill fixes reversals in an existing one. Subscription access, and how a refund or a chargeback of a renewal ends it, is the `add-subscriptions` skill; this one takes back the credits that period granted.
 
 ## Before writing code
 
