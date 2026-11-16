@@ -32,6 +32,8 @@ Options:
                             (repeatable; "path" may end in .length to count a list)
   --var NAME=value          replace {{NAME}} in the request and observe specs, so tokens and
                             keys stay out of files; the output shows {{NAME}}, not the value
+  {{i}}                     in the request or an edit, the number of each request: 1 to N for
+                            replay and race, 1 for send (an idempotency key or account per request)
   --extract path            print only the value at that JSON path of the response, for
                             passing a token or an id from one call to the next
   --times N                 for replay, 2 to ${MAX_TIMES} (default 2)
@@ -56,6 +58,7 @@ function parseArgs(argv) {
     else if (flag === 'var') {
       const [name, v] = splitPair(value, flag);
       if (!/^\w+$/.test(name)) throw new UsageError(`--var names use letters, digits and underscores, got "${name}".`);
+      if (name === 'i') throw new UsageError('{{i}} is the number of each request. Name the variable something else.');
       options.vars[name] = v;
     } else if (flag === 'extract') options.extract = value;
     else if (flag === 'times') options.times = Number(value);
@@ -73,7 +76,7 @@ function parseArgs(argv) {
   return options;
 }
 
-function loadSpec(arg, what, vars = {}) {
+function loadSpec(arg, what, vars = {}, numbered = false) {
   let text = arg;
   if (!arg.trim().startsWith('{')) {
     try {
@@ -89,12 +92,18 @@ function loadSpec(arg, what, vars = {}) {
     throw new UsageError(`The ${what} is not valid JSON: ${err.message}`);
   }
   // {{NAME}} is filled in after parsing, so a value can never change the shape of the
-  // spec. Inside the URL the value is percent-encoded.
+  // spec. Inside the URL the value is percent-encoded, except a placeholder at the very
+  // start, which stands for the base URL ("{{BASE}}/api/me") and is used as written.
+  // {{i}} stays for now: each request gets its own number when it is sent.
   const fill = (node, encode) => {
     if (typeof node === 'string') {
-      return node.replace(/\{\{(\w+)\}\}/g, (match, name) => {
+      return node.replace(/\{\{(\w+)\}\}/g, (match, name, at) => {
+        if (name === 'i') {
+          if (numbered) return match;
+          throw new UsageError(`{{i}} numbers the requests that are sent. The ${what} cannot use it.`);
+        }
         if (!Object.hasOwn(vars, name)) throw new UsageError(`The ${what} uses {{${name}}}. Pass --var ${name}=value.`);
-        return encode ? encodeURIComponent(vars[name]) : vars[name];
+        return encode && at > 0 ? encodeURIComponent(vars[name]) : vars[name];
       });
     }
     if (Array.isArray(node)) return node.map((item) => fill(item, false));
@@ -105,6 +114,7 @@ function loadSpec(arg, what, vars = {}) {
   };
   spec = fill(spec, false);
   if (typeof spec.url !== 'string') throw new UsageError(`The ${what} needs a "url".`);
+  if (!URL.canParse(spec.url)) throw new UsageError(`The ${what} has a "url" that is not a full URL: ${redactor(vars)(spec.url)}`);
   if (spec.body !== undefined && spec.rawBody !== undefined) {
     throw new UsageError(`The ${what} has both "body" and "rawBody". Use one.`);
   }
@@ -184,6 +194,18 @@ function applyEdits(spec, edits) {
   return { method: String(spec.method).toUpperCase(), url: url.toString(), headers, rawBody };
 }
 
+// {{i}} survives the URL parser as %7B%7Bi%7D%7D.
+const INDEX = /\{\{i\}\}|%7B%7Bi%7D%7D/gi;
+function withIndex(request, n) {
+  const put = (text) => text.replace(INDEX, String(n));
+  return {
+    ...request,
+    url: put(request.url),
+    headers: Object.fromEntries(Object.entries(request.headers).map(([k, v]) => [k, put(v)])),
+    rawBody: request.rawBody === undefined ? undefined : put(request.rawBody),
+  };
+}
+
 async function fire(request) {
   const started = performance.now();
   try {
@@ -242,7 +264,7 @@ async function readNumber(observe) {
 export async function runProbe(options) {
   const vars = options.vars ?? {};
   const redact = redactor(vars);
-  const spec = loadSpec(options.requestArg, 'request', vars);
+  const spec = loadSpec(options.requestArg, 'request', vars, true);
   const request = applyEdits(spec, options.edits);
   checkTarget(request.url, options.allowHost);
   const observes = [options.observe ?? []].flat().map((arg) => {
@@ -256,12 +278,12 @@ export async function runProbe(options) {
   for (const observe of observes) before.push(await readNumber(observe));
   const started = performance.now();
   let results;
-  if (options.mode === 'send') results = [await fire(request)];
+  if (options.mode === 'send') results = [await fire(withIndex(request, 1))];
   else if (options.mode === 'replay') {
     results = [];
-    for (let i = 0; i < options.times; i += 1) results.push(await fire(request));
+    for (let i = 1; i <= options.times; i += 1) results.push(await fire(withIndex(request, i)));
   } else {
-    results = await Promise.all(Array.from({ length: options.parallel }, () => fire(request)));
+    results = await Promise.all(Array.from({ length: options.parallel }, (_, i) => fire(withIndex(request, i + 1))));
   }
   const ms = Math.round(performance.now() - started);
   const after = [];
@@ -279,7 +301,7 @@ export async function runProbe(options) {
   }
   const result = {
     probe: options.mode,
-    request: maskQuery(redact(`${request.method} ${request.url}`)),
+    request: maskQuery(redact(`${request.method} ${request.url.replace(INDEX, '{{i}}')}`)),
     edits: options.edits.map((e) => describeEdit(e, redact)),
     sent: results.length,
     statuses,

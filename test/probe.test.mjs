@@ -193,6 +193,46 @@ test('--var fills {{NAME}} and keeps the value out of the output', async () => {
   assert.match(missing.stderr, /uses \{\{HASH\}\}\. Pass --var HASH=value/);
 });
 
+test('a {{VAR}} at the start of the url is the base URL, used as written', async () => {
+  const spec = JSON.stringify({ url: '{{BASE}}/hit?q={{Q}}' });
+  const r = await run('send', spec, '--var', `BASE=${base}`, '--var', 'Q=a b&c');
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(hits.length, 1);
+  assert.equal(hits[0].query.q, 'a b&c');
+  assert.equal(r.json.request, 'GET {{BASE}}/hit?q={{Q}}');
+});
+
+test('a url that cannot be parsed exits with 2 and one line, no stack trace', async () => {
+  for (const args of [['send', '{"url":"{{BASE}}/api/me"}', '--var', 'BASE=nonsense'], ['send', '{"url":"/api/me"}']]) {
+    const r = await run(...args);
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /^The request has a "url" that is not a full URL: .*\n$/);
+    assert.doesNotMatch(r.stderr, /TypeError|\n\s+at /);
+  }
+});
+
+test('{{i}} gives each request its own number', async () => {
+  const spec = JSON.stringify({ method: 'POST', url: `${base}/hit/{{i}}?acct={{i}}`, headers: { 'idempotency-key': 'k-{{i}}' }, body: { n: '{{i}}' } });
+  const r = await run('race', spec, '--parallel', '5', '--set-header', 'x-n={{i}}', '--set-query', 'q=r{{i}}');
+  assert.equal(r.status, 0, r.stderr);
+  const sorted = (list) => list.sort((a, b) => a.localeCompare(b));
+  assert.deepEqual(sorted(hits.map((h) => h.headers['idempotency-key'])), ['k-1', 'k-2', 'k-3', 'k-4', 'k-5']);
+  assert.deepEqual(sorted(hits.map((h) => h.headers['x-n'])), ['1', '2', '3', '4', '5']);
+  assert.deepEqual(sorted(hits.map((h) => h.query.acct)), ['1', '2', '3', '4', '5']);
+  assert.deepEqual(sorted(hits.map((h) => h.query.q)), ['r1', 'r2', 'r3', 'r4', 'r5']);
+  assert.deepEqual(sorted(hits.map((h) => JSON.parse(h.body).n)), ['1', '2', '3', '4', '5']);
+  assert.match(r.json.request, /\/hit\/\{\{i\}\}\?acct=\{\{i\}\}/);
+  const replay = await run('replay', spec, '--times', '3');
+  assert.deepEqual(replay.json && hits.map((h) => h.headers['idempotency-key']), ['k-1', 'k-2', 'k-3']);
+  const send = await run('send', spec);
+  assert.deepEqual(send.json && hits.map((h) => h.headers['idempotency-key']), ['k-1']);
+  assert.match((await run('send', spec, '--var', 'i=1')).stderr, /\{\{i\}\} is the number of each request/);
+  const numberedObserve = JSON.stringify({ url: `${base}/count?n={{i}}`, path: 'stats.count' });
+  const bad = await run('send', spec, '--observe', numberedObserve);
+  assert.equal(bad.status, 2);
+  assert.match(bad.stderr, /cannot use it/);
+});
+
 test('a response that echoes a variable is masked in the samples', async () => {
   const r = await run('send', JSON.stringify({ method: 'POST', url: `${base}/echo`, rawBody: 'token={{TOKEN}}' }), '--var', 'TOKEN=tok_secret_123');
   assert.deepEqual(r.json.samples, [{ status: 200, body: 'token={{TOKEN}}' }]);
