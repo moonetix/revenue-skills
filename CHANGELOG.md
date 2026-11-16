@@ -4,12 +4,18 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-16
+
 ### Added
 
 - The `plugin` branch: `.github/workflows/plugin-branch.yml` rebuilds it on every `v*` tag with `scripts/build-plugin-branch.mjs`, holding only `.claude-plugin/`, `skills/`, a short README, `LICENSE` and `SECURITY.md`, so an installed plugin carries no practice app, trials or test secrets. `/plugin marketplace add moonetix/revenue-skills@plugin` installs from it. `test/plugin-branch.test.mjs` keeps it under 150 files.
 - `displayName` in `.claude-plugin/plugin.json`, and the `interface` block in `.codex-plugin/plugin.json` (display name, descriptions, developer, category, capabilities, links, three starter prompts, brand colors and `assets/icon.svg`).
 - A CI job that runs the HOL AI Plugin Scanner with `min_score: 75`, as the awesome-codex-plugins guide shows, plus `package-lock.json` and `.codexignore`.
 - `docs/social-preview.png`, built from `docs/social-preview.html`. The demo page uses it as its `og:image`, with a `twitter:card`, and shows the skills version in its facts.
+- `add-subscriptions`, the eleventh skill: subscription access derived on the server from the provider's state through the whole life cycle (trial, past due with a grace period, cancel at period end or now, pause, plan changes, refunds, chargebacks and revocations), events handled once and in any order by fetching the latest object, one entitlement per subscription, credits granted once per paid period, one trial per person and a reconciliation job. References for Stripe Billing, the App Store, Google Play, Paddle Billing and RevenueCat, checked against their documentation on 2026-11-16, and the pattern in Next.js, Express, Django, Laravel and Rails. `assets/sign-test-event.mjs` is now a shared file, copied from `build-webhook-endpoint` by `npm run sync`. `build-webhook-endpoint`, `handle-refunds-and-reversals`, `add-usage-credits` and `guard-signups` point to it.
+- `trials/add-subscriptions/`: Coinbarn Plus on Stripe Billing, with a Stripe API sandbox (`trials/lib/fake-stripe.mjs`) and 21 checks, from the first paid invoice to a lost cancellation found by the sync route.
+- Trial results without the skill, and with Claude Sonnet 5.5 as well as Claude Opus 5.5, in the README and `trials/README.md`, with every failed check explained.
+- Directory listing fields in `.claude-plugin/plugin.json`: `icon` (`assets/icon.png`, now also on the `plugin` branch), `documentationUrl` and `supportUrl`.
 
 ### Changed
 
@@ -18,6 +24,10 @@ All notable changes to this project are documented here. The format follows [Kee
 - `build-webhook-endpoint`, `add-offerwall` and `handle-refunds-and-reversals` each say when to use which of the three.
 - `add-offerwall` lists its networks in alphabetical order.
 - The demo page has one maintainer credit.
+- `add-offerwall`: a postback reward with a fraction, such as `12.75`, is rounded down once to whole units after the hash check, never refused. A Sonnet trial run refused one.
+- `guard-signups`: the sources on plus addressing for consumer Outlook.com conflict; the reference says so and keeps the tag by default, with `plusTagDomains` for operators who see `+` variants farming one mailbox.
+- Trial check P11 of `add-payouts` also accepts an app that finds the issued card with a lookup by the same key and marks it paid at once. The Opus run without the skill did exactly that and now passes 16/16.
+- The trial harness signs Stripe test events with API version `2026-10-28.endive`, as the subscription trial does.
 
 ## [1.2.0] - 2026-11-16
 
@@ -97,7 +107,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - One exploit per planted bug, run in CI against both versions of the app.
 - Plugin manifests for Claude Code and Codex, and `evals/evals.json` for every skill.
 
-[Unreleased]: https://github.com/moonetix/revenue-skills/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/moonetix/revenue-skills/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/moonetix/revenue-skills/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/moonetix/revenue-skills/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/moonetix/revenue-skills/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/moonetix/revenue-skills/releases/tag/v1.0.0
