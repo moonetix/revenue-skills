@@ -27,5 +27,5 @@ Out of scope:
 
 | Version | Fixes |
 | --- | --- |
-| 1.1.x | yes |
-| 1.0.x | no, update to 1.1 |
+| 1.2.x | yes |
+| 1.1.x and older | no, update to 1.2 |
