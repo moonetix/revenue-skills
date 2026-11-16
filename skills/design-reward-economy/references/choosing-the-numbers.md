@@ -74,7 +74,7 @@ export function coinsForUsd(usdMicros, { redeemCoinsPerDollar }) {
 }
 ```
 
-The same in Python, where integers have no size limit:
+The same in Python, where integers are arbitrary precision:
 
 ```python
 import re

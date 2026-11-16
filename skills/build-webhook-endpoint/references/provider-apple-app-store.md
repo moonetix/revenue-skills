@@ -46,7 +46,7 @@ Not needed. `signedPayload` is signed on its own, so the JSON wrapper can be par
 
 ## Timestamp and replay
 
-`signedDate` is when the App Store signed the data and stays the same on a retry. Apple documents no freshness window, and a retry can come 72 hours after the attempt before it, so do not refuse old notifications by time. The stored `notificationUUID` is the replay protection. When several notifications concern one transaction, Apple says to use the one with the most recent `signedDate`.
+`signedDate` is when the App Store signed the data and stays the same on a retry. Apple documents no freshness window, and a retry can come 72 hours after the attempt before it, so accept old notifications whatever their age. The stored `notificationUUID` is the replay protection. When several notifications concern one transaction, Apple says to use the one with the most recent `signedDate`.
 
 ## Delivery
 
