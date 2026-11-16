@@ -33,6 +33,18 @@
         "The environment field names the runtime and stores the proofs ran on and what could not be run.",
         "A caller duty that the README documents and the shipped stores meet is recorded as a note, not a finding."
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "Check our Stripe and Google Play integrations only. Can anyone get coins without paying, or keep them after a refund?",
+      "expected_output": "A focused answer about the Stripe webhook and the Google Play notification endpoint, each point with file and line: how each request is authenticated, what the grant is computed from, what deduplicates, and which refund, dispute and voided purchase events are handled.",
+      "assertions": [
+        "The answer states whether the Stripe signature is verified over the raw body before parsing and quotes the line, or states that it is not.",
+        "The answer states whether the Google Play endpoint verifies the Pub/Sub OIDC token, including its audience and email, and whether the purchase is read from the Play Developer API before coins are granted.",
+        "The answer names the key that stops a second delivery for each provider, or says that none exists.",
+        "The answer lists which of charge.refunded, refund.created, charge.dispute.created and voidedPurchaseNotification have handlers, with file and line, and calls out the ones that are acknowledged and ignored.",
+        "No money-audit folder or other file is created, because this is a focused check."
+      ]
     }
   ]
 }

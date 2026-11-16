@@ -45,6 +45,33 @@
         "The event id is stored under a unique constraint in the same transaction as the credit, and a repeated event is answered with a 2xx status and credits nothing.",
         "The project's tests cover a missing header, a wrong signature and a repeated event, and they pass."
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "Our Next.js App Router app sells credit packs through Stripe Checkout. app/api/stripe/route.ts calls request.json(), skips verification when STRIPE_WEBHOOK_SECRET is unset, and credits session.amount_total / 100 coins on checkout.session.completed. Some customers pay by bank debit. Make the webhook correct.",
+      "expected_output": "A route handler that verifies Stripe-Signature over the raw body with the official library, stores event ids under a unique key, grants the pack stored on the order only when the payment is settled, including async payment methods, with tests.",
+      "assertions": [
+        "The route reads the body with request.text() or request.arrayBuffer() and passes those bytes to stripe.webhooks.constructEvent or an equivalent verifier before parsing.",
+        "There is no code path that skips verification, and the app fails at start-up or on the first request with an error when the secret is missing, never with a default.",
+        "checkout.session.completed grants only when payment_status is not unpaid, and checkout.session.async_payment_succeeded grants the remaining delayed payments.",
+        "The number of credits comes from the app's own order or price table, not from amount_total, and amount_total and currency are compared with the order.",
+        "The Stripe event id is inserted under a unique constraint in the same transaction as the credit, and a second order-level key stops two events for one session from crediting twice.",
+        "refund and dispute events are not answered with 200 and dropped: they are handled or stored for the reversal code.",
+        "The tests sign events with the test secret, cover a missing signature, a changed body, a stale timestamp and a duplicate event, and they pass."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Add an endpoint for App Store Server Notifications V2 to our Python backend. Users buy coin packs (consumables) and a monthly subscription. Production and sandbox notifications both go to the same URL.",
+      "expected_output": "An endpoint that verifies signedPayload and the nested signed transaction with Apple's App Store Server Library, checks bundle id and environment, deduplicates on notificationUUID, credits coins once per transactionId, and routes REFUND, REFUND_REVERSED, REVOKE and EXPIRED, with tests.",
+      "assertions": [
+        "signedPayload is verified with SignedDataVerifier from the App Store Server Library or an equivalent check of the certificate chain to an Apple root certificate, never only base64-decoded.",
+        "signedTransactionInfo is verified as well before any of its fields are used.",
+        "bundleId and environment are compared with configuration, and sandbox notifications cannot credit production accounts.",
+        "notificationUUID is stored under a unique constraint, and coin credits are keyed on transactionId, not on originalTransactionId.",
+        "REFUND and REVOKE notifications reach reversal code or are stored for it, and are not acknowledged and dropped.",
+        "The handler answers 200 after the commit and keeps slow work out of the request."
+      ]
     }
   ]
 }

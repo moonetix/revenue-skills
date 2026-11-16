@@ -43,6 +43,19 @@
         "A referred account whose normalized email, device id or payout destination equals the referrer's is marked as blocked and produces no commission.",
         "The duplicate handling of the ledger insert treats MySQL error 1062 as already posted and does not use INSERT IGNORE."
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "Add an invite-a-friend program to our Next.js app with Prisma and PostgreSQL. The inviter gets 500 credits when the friend makes a first purchase.",
+      "expected_output": "A referral row written in the sign-up transaction and keyed by the new account, a reward posted once after the verified purchase and its hold, under a lock on the inviter for the cap, with tests.",
+      "assertions": [
+        "The referrals table has the referred account id as its primary key, and the row is created inside the same prisma.$transaction as the user.",
+        "The referrer is found from a code on the server, and a referrer id in the request body is ignored.",
+        "Nothing is credited at sign-up.",
+        "The reward is posted only through a conditional update from qualified to rewarded that compares the hold time with the database clock.",
+        "The reward ledger entry uses the referred account id as reference under the ledger's unique kind and reference key.",
+        "A test delivers the qualifying purchase event twice and asserts one reward."
+      ]
     }
   ]
 }

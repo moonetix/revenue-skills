@@ -8,5 +8,8 @@
   {"query": "Add a pricing page with three tiers and a monthly/yearly toggle.", "should_trigger": false},
   {"query": "Run a general security scan for XSS and missing headers on the marketing site.", "should_trigger": false},
   {"query": "Our Stripe checkout button does nothing when clicked, can you debug the frontend?", "should_trigger": false},
-  {"query": "Write unit tests for the date formatting helpers.", "should_trigger": false}
+  {"query": "Write unit tests for the date formatting helpers.", "should_trigger": false},
+  {"query": "Can someone forge our PayPal webhook? We download the certificate from the paypal-cert-url header.", "should_trigger": true},
+  {"query": "Review our App Store server notification handler for ways to get coins for free.", "should_trigger": true},
+  {"query": "Migrate our Stripe integration from the Charges API to PaymentIntents.", "should_trigger": false}
 ]

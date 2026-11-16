@@ -38,6 +38,19 @@
         "A request without a staff session, without a reason, or above the configured cap is refused with a 4xx status and creates no ledger row.",
         "A manual debit larger than the account's balance is refused unless it names the entry it corrects."
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "Our Django app on PostgreSQL keeps points in a column on the user profile, and several views add and subtract with profile.points += n; profile.save(). Replace it with a proper ledger.",
+      "expected_output": "A ledger model with a unique constraint on kind and reference, one posting function used by every view inside transaction.atomic, a conditional debit, opening entries for existing balances, and tests.",
+      "assertions": [
+        "A model with a BigIntegerField amount and a UniqueConstraint on the kind and reference fields is added with a migration.",
+        "One posting function inserts the entry inside a savepoint or with ON CONFLICT DO NOTHING, and updates the balance only when the entry was inserted.",
+        "Debits use a filtered update with an F expression, such as filter(balance__gte=n).update(balance=F('balance') - n), or run after select_for_update, and the number of rows changed is checked.",
+        "No view or task assigns to the points field and calls save() any more.",
+        "A data migration posts one opening entry per profile with a non-zero balance.",
+        "A test posts the same kind and reference twice and asserts one entry and one balance change."
+      ]
     }
   ]
 }

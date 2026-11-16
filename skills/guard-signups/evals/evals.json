@@ -41,6 +41,19 @@
         "Running the probe script in race mode with 10 parallel requests for one fresh account shows a balance change equal to one redemption.",
         "A test with a code capped at 2 and three different accounts ends with exactly 2 redemption rows."
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "Our Django app has promo codes with a maximum number of uses, but popular codes get redeemed more times than allowed and some accounts redeem the same code twice. Fix it.",
+      "expected_output": "A redemption table with a unique code and user key, a conditional update of the code's counter in the same transaction, the amount taken from the code's row, and parallel tests.",
+      "assertions": [
+        "The redemption model has a unique constraint on the code and the user.",
+        "The redemption insert, the counter update and the credit run inside one transaction.atomic block.",
+        "The counter is taken with a filtered update such as filter(redeemed__lt=F('max_redemptions')).update(redeemed=F('redeemed') + 1), and the number of rows changed is checked.",
+        "When the counter update changes no row, the transaction rolls back and the redemption row does not remain.",
+        "The credited amount is read from the promo code row, not from the request.",
+        "A test redeems a code capped at N from N + 1 accounts in parallel and asserts N redemptions."
+      ]
     }
   ]
 }

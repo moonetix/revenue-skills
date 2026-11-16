@@ -43,6 +43,32 @@
         "The credits endpoint returns the available amount and the amount and date of the next expiry, read from the database at request time.",
         "For every account in the test database the cached balance equals the sum of its ledger entries after the tests have run."
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "Our Next.js app sells AI credits and streams answers from OpenAI's Responses API. Users who close the tab in the middle of an answer are never charged, and when we changed our prices last month, requests that were already running were charged the new price. Fix the metering.",
+      "expected_output": "A reservation priced from the counted prompt and the max output tokens before the call, a price version stored on the reservation, and a settle on the server that runs on every path, including a user who disconnects, with tests.",
+      "assertions": [
+        "Before the OpenAI call, credits are reserved for a bound computed from a prompt token count and the same max_output_tokens value that is passed to the request.",
+        "Prices are read from a table of integer prices with versions, and the reservation row stores the version that the commit later uses.",
+        "The cost is computed from the usage on the response.completed (or response.incomplete) event, with cached and cache-written input tokens taken out of input_tokens and priced separately, and reasoning tokens priced as output.",
+        "The settle runs in a finally block or an equivalent server-side path, so a closed browser connection aborts the provider request and still commits the cost of what was delivered.",
+        "A stream cut without a usage report is charged from the counted prompt and the counted delivered output, never more than the reserved bound.",
+        "A test closes the client connection during a stream and asserts one usage entry and a reserved amount of zero afterwards."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Our Python agent calls Anthropic's Messages API in a loop and runs tools between the calls. One task sometimes uses up a user's whole balance, and users who start several tasks at once end up below zero. Add limits that hold.",
+      "expected_output": "A credit budget per agent run that is reserved before the run starts, steps that take their bound from it with a conditional update, a step limit and a timeout, and a test with parallel runs and parallel steps.",
+      "assertions": [
+        "Each run reserves a capped amount against balance minus reserved with one conditional statement before the first model call.",
+        "Before each model call, the step's bound is taken from the run's budget with a conditional update that compares spent plus held plus the bound with the cap.",
+        "After each step, its cost is added to the run's spent amount in the database, and the run commits that amount once at the end.",
+        "The run has a maximum number of steps and a wall-clock timeout shorter than its reservation's lifetime.",
+        "Output tokens are priced from usage.output_tokens, which includes thinking tokens, and input from input_tokens plus the cache read and cache creation fields at their own prices.",
+        "A test starts several runs in parallel against a balance that covers fewer of them and asserts that the balance never goes below zero."
+      ]
     }
   ]
 }

@@ -8,5 +8,10 @@
   {"query": "Verify the signature on our payment provider's webhook before we credit the order.", "should_trigger": false},
   {"query": "Add a withdrawal feature so users can cash out their earnings to gift cards.", "should_trigger": false},
   {"query": "Write our refund policy page and the email we send when a refund is approved.", "should_trigger": false},
-  {"query": "Our provider retried a payment webhook and the user was credited twice. Make the credit idempotent.", "should_trigger": false}
+  {"query": "Our provider retried a payment webhook and the user was credited twice. Make the credit idempotent.", "should_trigger": false},
+  {"query": "revenuecat webhook refund: CANCELLATION with cancel_reason CUSTOMER_SUPPORT comes in and the user keeps the coins", "should_trigger": true},
+  {"query": "Paddle sends adjustment.created with action chargeback. What should happen to the credits, and what when chargeback_reverse arrives?", "should_trigger": true},
+  {"query": "Handle PayPal PAYMENT.CAPTURE.REFUNDED and CUSTOMER.DISPUTE.RESOLVED so the credits go back and come back correctly.", "should_trigger": true},
+  {"query": "Verify the Stripe-Signature header on our webhook before anything else runs.", "should_trigger": false},
+  {"query": "Show customers a list of their past Stripe invoices on the billing page.", "should_trigger": false}
 ]
