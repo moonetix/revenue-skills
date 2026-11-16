@@ -113,32 +113,32 @@ const BONUS_FIELDS = {
 const isObject = (value) => typeof value === 'object' && value !== null && !Array.isArray(value);
 const isNote = (key) => key.startsWith('_') || key.startsWith('$');
 
-function readField(value, where, rule, problems) {
+function readField(value, where, spec, problems) {
   if (value === undefined) {
-    if (rule.required) problems.push(`"${where}" is required`);
-    return rule.def;
+    if (spec.required) problems.push(`"${where}" is required`);
+    return spec.def;
   }
-  if (rule.type === 'string') {
+  if (spec.type === 'string') {
     if (typeof value !== 'string' || !value.trim()) problems.push(`"${where}" must be a non-empty string`);
     return value;
   }
-  if (rule.type === 'boolean') {
+  if (spec.type === 'boolean') {
     if (typeof value !== 'boolean') problems.push(`"${where}" must be true or false`);
     return value;
   }
-  if (rule.type === 'enum') {
-    if (!rule.values.includes(value)) problems.push(`"${where}" must be one of: ${rule.values.join(', ')}`);
+  if (spec.type === 'enum') {
+    if (!spec.values.includes(value)) problems.push(`"${where}" must be one of: ${spec.values.join(', ')}`);
     return value;
   }
-  if (rule.type === 'arrival') return readArrival(value, where, problems);
+  if (spec.type === 'arrival') return readArrival(value, where, problems);
   if (typeof value !== 'number' || !Number.isFinite(value)) {
     problems.push(`"${where}" must be a number, got ${JSON.stringify(value)}`);
-    return rule.def;
+    return spec.def;
   }
-  if (rule.min !== undefined && value < rule.min) problems.push(`"${where}" must be ${rule.min} or more, got ${value}`);
-  if (rule.above !== undefined && value <= rule.above) problems.push(`"${where}" must be greater than ${rule.above}, got ${value}`);
-  if (rule.max !== undefined && value > rule.max) problems.push(`"${where}" must be ${rule.max} or less, got ${value}`);
-  if (rule.below !== undefined && value >= rule.below) problems.push(`"${where}" must be less than ${rule.below}, got ${value}`);
+  if (spec.min !== undefined && value < spec.min) problems.push(`"${where}" must be ${spec.min} or more, got ${value}`);
+  if (spec.above !== undefined && value <= spec.above) problems.push(`"${where}" must be greater than ${spec.above}, got ${value}`);
+  if (spec.max !== undefined && value > spec.max) problems.push(`"${where}" must be ${spec.max} or less, got ${value}`);
+  if (spec.below !== undefined && value >= spec.below) problems.push(`"${where}" must be less than ${spec.below}, got ${value}`);
   return value;
 }
 
@@ -174,7 +174,7 @@ function readSection(source, where, fields, problems, extra = []) {
   for (const key of Object.keys(source ?? {})) {
     if (!isNote(key) && !extra.includes(key) && !(key in fields)) problems.push(`"${where}.${key}" is not a known field`);
   }
-  for (const [name, rule] of Object.entries(fields)) out[name] = readField(source?.[name], `${where}.${name}`, rule, problems);
+  for (const [name, spec] of Object.entries(fields)) out[name] = readField(source?.[name], `${where}.${name}`, spec, problems);
   return out;
 }
 

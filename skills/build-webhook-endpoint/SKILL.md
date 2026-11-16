@@ -5,7 +5,7 @@ license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.3.3"
+  version: "1.3.4"
 ---
 
 # Build a webhook endpoint
@@ -16,7 +16,7 @@ This skill produces the endpoint through which another company's server tells th
 
 ## Before writing code
 
-Read the project first. Do not ask the user what the code can tell you.
+Read the project first, and ask the user only what the code cannot tell you.
 
 - **Stack.** Language, framework, database, migration tool, test framework. How a route gets the request body, and whether a global body parser runs before every route.
 - **Existing handlers.** Every route another company's server calls, and every page a provider redirects the user back to. For each: what it verifies, what it stores, what it credits.

@@ -5,7 +5,7 @@ license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.3.3"
+  version: "1.3.4"
 ---
 
 # Build a ledger
@@ -14,7 +14,7 @@ This skill produces the one place in an app where balances change: a ledger tabl
 
 ## Before writing code
 
-Read the project first. Do not ask the user what the code can tell you.
+Read the project first, and ask the user only what the code cannot tell you.
 
 - **Stack and database.** Language, framework, database engine and version, the migration tool, the test framework. How the project opens a transaction, and whether the framework already wraps each request in one.
 - **Where the balance lives today.** A column on the user row, a wallet table, a value computed from a history table, a counter in a cache. Note the type of the account key.

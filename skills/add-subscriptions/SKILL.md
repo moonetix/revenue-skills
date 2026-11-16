@@ -5,7 +5,7 @@ license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe and test event scripts.
 metadata:
   author: moonetix
-  version: "1.3.3"
+  version: "1.3.4"
 ---
 
 # Add subscriptions
@@ -16,7 +16,7 @@ This skill produces subscription access that holds under real provider traffic: 
 
 ## Before writing code
 
-Read the project first. Do not ask the user what the code can tell you.
+Read the project first, and ask the user only what the code cannot tell you.
 
 - **Stack.** Language, framework, database, migration tool, test framework, job scheduler, how a transaction is opened.
 - **The provider.** Stripe Billing, the App Store, Google Play, Paddle, RevenueCat, or several. Read the provider's current documentation for its statuses, events and the API call that returns the current state. For the five below, start from the reference, then confirm against the pages it lists.
@@ -76,7 +76,7 @@ Use the project's router, database layer, migration tool and conventions. Do not
 
 10. **Schedule the reconciliation job.** Page through the provider's list (Stripe with `status=all`) and write each subscription through the same function as the webhook; check every row that gives access the other way round. Alert on every repair. See "Reconciliation" in [references/events-in-any-order.md](references/events-in-any-order.md).
 
-11. **Remove what the client decides.** A return page that sets the plan, a client receipt check that grants, a plan or status field accepted from a request body, a premium flag in local storage. The return page may say "processing" and read the stored state.
+11. **Remove what the client decides.** A return page that sets the plan, a client receipt check that grants, a plan or status field accepted from a request body, a premium flag in local storage. The return page may say "processing" and show what the server has stored.
 
 ## Rules that must hold
 

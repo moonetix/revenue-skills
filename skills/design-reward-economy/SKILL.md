@@ -5,7 +5,7 @@ license: MIT
 compatibility: Needs Node 20 or newer to run the bundled economy check script.
 metadata:
   author: moonetix
-  version: "1.3.3"
+  version: "1.3.4"
 ---
 
 # Design a reward economy
@@ -21,7 +21,7 @@ Read the project first.
 - **What history exists.** A ledger, conversion records with the payout in dollars and the time of each reversal, payout records with fees. How many finished months.
 - **How the app is paid.** Which networks, and how long each takes to pay.
 
-Then fill the inputs. Measure what the data holds, ask the owner for the rest, and never fill a gap with a figure from an article or another app. The queries are in [references/measuring-from-your-data.md](references/measuring-from-your-data.md).
+Then gather the inputs. Measure what the data holds, ask the owner for the rest, and never fill a gap with a figure from an article or another app. The queries are in [references/measuring-from-your-data.md](references/measuring-from-your-data.md).
 
 | Input | Source | With no data |
 | --- | --- | --- |

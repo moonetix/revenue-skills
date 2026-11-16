@@ -5,7 +5,7 @@ license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.3.3"
+  version: "1.3.4"
 ---
 
 # Add an offerwall
@@ -149,7 +149,7 @@ Done when:
 - Do not credit from the browser, from an SDK callback or from a "reward earned" event in the app.
 - Do not check for the transaction id and then insert. Insert, and let the unique key decide.
 - Do not subtract the amount named in a reversal request. Look up what was credited.
-- Do not answer 2xx before the commit, and do not answer 4xx or 5xx to a duplicate: the network would retry forever.
+- Do not answer 2xx before the commit, and do not answer 4xx or 5xx to a duplicate: the network would keep retrying.
 - Do not rely on an address allowlist alone where the network offers a signature, and do not read the address from a header the caller controls.
 - Do not put the postback route behind login, CSRF checks, a redirect or bot protection.
 - Do not reformat values before hashing, and do not rebuild a URL that the network signed as a whole.
