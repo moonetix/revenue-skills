@@ -6,6 +6,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>revenue-skills attack lab and audit report - Moonetix</title>
 <meta name="description" content="{{ATTACKS}} attacks on a practice app that handles money, each sent to a broken and a fixed version, with the full audit report an AI agent wrote using the money-audit skill.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="revenue-skills attack lab and audit report">
+<meta property="og:description" content="{{ATTACKS}} attacks on a practice app that handles money, each sent to a broken and a fixed version, with the full audit report an AI agent wrote using the money-audit skill.">
+<meta property="og:url" content="{{PAGE_URL}}">
+<meta property="og:image" content="{{PAGE_URL}}{{OG_IMAGE}}">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="revenue-skills by Moonetix: agent skills that find and fix the bugs that cost an app money">
+<meta name="twitter:card" content="summary_large_image">
 <script src="theme.js"></script>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preload" href="fonts/mona-sans-vf.woff2" as="font" type="font/woff2" crossorigin>
@@ -52,7 +61,7 @@
       <div><dt>Planted bugs found</dt><dd>{{FOUND}} of {{PLANTED}}</dd></div>
       <div><dt>Audit run</dt><dd>{{AUDIT_DATE}}, Claude Code</dd></div>
       <div><dt>Page built</dt><dd>{{BUILT}}, Node {{NODE}}</dd></div>
-      <div><dt>Commit</dt><dd id="fact-commit">{{COMMIT}}</dd></div>
+      <div><dt>Skills version</dt><dd>{{VERSION}}, commit <span id="fact-commit">{{COMMIT}}</span></dd></div>
     </dl>
     <figure class="sample">
       <figcaption><span class="mono">V05</span> Ten purchases at once of a 300 coin theme, with 300 coins in the account. <a href="?attack=V05#lab" id="sample-open">Open in the lab</a></figcaption>
@@ -198,7 +207,6 @@ node revenue-skills/playground/score.mjs coinjar/money-audit/findings.json</pre>
 <footer class="foot">
   <div class="wrap">
     <span>MIT licensed. Source on <a href="https://github.com/moonetix/revenue-skills">GitHub</a>.</span>
-    <span>Made by <a href="https://moonetix.com">Moonetix</a></span>
   </div>
 </footer>
 </body>

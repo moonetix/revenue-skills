@@ -13,6 +13,8 @@ import { CLASSES, validate } from '../skills/money-audit/scripts/validate-findin
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, '_site');
+const PAGE_URL = 'https://moonetix.github.io/revenue-skills/';
+const OG_IMAGE = 'social-preview.png';
 const read = (...parts) => readFileSync(join(root, ...parts), 'utf8');
 
 const SECRETS = { webhookSecret: 'whsec_test_not_secret', postbackKey: 'test_postback_key_not_secret' };
@@ -656,6 +658,7 @@ for (const name of readdirSync(join(root, 'site')).sort()) {
   cpSync(join(root, 'site', name), join(out, name), { recursive: true });
 }
 writeFileSync(join(out, 'data.json'), JSON.stringify(data));
+cpSync(join(root, 'docs', OG_IMAGE), join(out, OG_IMAGE));
 
 const fill = {
   ATTACKS: attacks.length,
@@ -671,7 +674,10 @@ const fill = {
   AUDIT_DATE: report.date,
   BUILT: data.built.date,
   NODE: data.built.node,
-  COMMIT: data.built.commit || 'local build',
+  COMMIT: data.built.commit || 'not recorded',
+  VERSION: JSON.parse(read('package.json')).version,
+  PAGE_URL,
+  OG_IMAGE,
 };
 let html = read('site', 'index.html');
 for (const [name, value] of Object.entries(fill)) html = html.replaceAll(`{{${name}}}`, String(value));
