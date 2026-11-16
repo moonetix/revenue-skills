@@ -85,6 +85,8 @@ try {
 if (data) {
   const classTitle = Object.fromEntries(data.classes.map((c) => [c.id, c.title]));
   const attackOf = new Map();
+  // The first finding of an attack is the one the scorer paired with it; the others also point at its code.
+  for (const attack of data.attacks) if (attack.findings.length) attackOf.set(attack.findings[0], attack.id);
   for (const attack of data.attacks) for (const id of attack.findings) if (!attackOf.has(id)) attackOf.set(id, attack.id);
   const params = new URLSearchParams(location.search);
   const remember = (name, value) => {

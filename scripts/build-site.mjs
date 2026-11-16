@@ -570,7 +570,7 @@ try {
 }
 const scored = score(report, key);
 if (scored.missed.length) throw new Error(`the example audit misses planted bugs: ${scored.missed.map((b) => b.id).join(', ')}`);
-const foundBy = new Map(scored.found.map((entry) => [entry.id, entry.by]));
+const foundBy = new Map(scored.found.map((entry) => [entry.id, [entry.by, ...entry.related]]));
 
 // --- run every attack against both apps
 
@@ -643,6 +643,7 @@ const data = {
     live,
     planted: scored.planted,
     found: scored.found.length,
+    onTarget: scored.onTarget,
     extra: scored.extra,
   },
   skills,
@@ -663,6 +664,7 @@ const fill = {
   LIVE: live,
   PLANTED: scored.planted,
   FOUND: scored.found.length,
+  ON_TARGET: scored.onTarget,
   SKILLS: skills.length,
   CLASSES: CLASSES.length,
 };

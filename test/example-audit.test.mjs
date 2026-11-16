@@ -29,4 +29,5 @@ test('the example audit finds every planted bug', () => {
   const result = score(report, key);
   assert.deepEqual(result.missed, []);
   assert.equal(result.found.length, key.bugs.length);
+  assert.equal(new Set(result.found.map((bug) => bug.by)).size, key.bugs.length);
 });
