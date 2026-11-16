@@ -135,7 +135,7 @@ test('plugin manifests use only the fields their formats define', () => {
   assert.equal(codex.name, portable.name);
   assert.equal(codex.skills, './skills/');
   const ui = codex.interface;
-  const uiFields = ['displayName', 'shortDescription', 'longDescription', 'developerName', 'category', 'capabilities', 'websiteURL', 'supportURL', 'privacyPolicyURL', 'termsOfServiceURL', 'defaultPrompt', 'brandColor', 'brandColorDark', 'composerIcon', 'composerIconDark', 'logo', 'logoDark'];
+  const uiFields = ['displayName', 'shortDescription', 'longDescription', 'developerName', 'category', 'capabilities', 'websiteURL', 'supportURL', 'privacyPolicyURL', 'termsOfServiceURL', 'defaultPrompt', 'brandColor', 'brandColorDark', 'composerIcon', 'composerIconDark', 'logo', 'logoDark', 'screenshots'];
   for (const key of Object.keys(ui)) assert.ok(uiFields.includes(key), `.codex-plugin/plugin.json interface: ${key}`);
   for (const key of ['displayName', 'shortDescription', 'longDescription', 'developerName', 'category', 'capabilities', 'composerIcon', 'logo']) {
     assert.ok(ui[key] !== undefined, `interface.${key} is required in the Codex format`);
