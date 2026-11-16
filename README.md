@@ -1,6 +1,6 @@
 # revenue-skills plugin
 
-Agent skills that find and fix the bugs that cost an app money. This branch holds only the files of the plugin, version 1.3.2: the plugin manifests, the skills, the license and the security policy. The source, the tests, the practice app, the trials and the demo page are on the main branch of [moonetix/revenue-skills](https://github.com/moonetix/revenue-skills). A workflow rebuilds this branch from each release tag, so changes go to the main branch.
+Agent skills that find and fix the bugs that cost an app money. This branch holds only the files of the plugin, version 1.3.3: the plugin manifests, the skills, the license and the security policy. The source, the tests, the practice app, the trials and the demo page are on the main branch of [moonetix/revenue-skills](https://github.com/moonetix/revenue-skills). A workflow rebuilds this branch from each release tag, so changes go to the main branch.
 
 ## Install in Claude Code
 
@@ -23,6 +23,6 @@ Agent skills that find and fix the bugs that cost an app money. This branch hold
 | [`design-reward-economy`](skills/design-reward-economy/) | Design and check the numbers behind a rewards currency. |
 | [`guard-signups`](skills/guard-signups/) | Build sign-up screening and once-only redemption rules that keep sign-up bonuses, free trials, promo codes and referral rewards from being farmed by fake and duplicate accounts. |
 | [`handle-refunds-and-reversals`](skills/handle-refunds-and-reversals/) | Make refunds, chargebacks, disputes and reversed conversions take back what the original event granted, exactly once. |
-| [`money-audit`](skills/money-audit/) | Audit the code paths where an app handles money, credits, points or rewards, and report the bugs that lose money, each with the exact file and line, the quoted code, and a proof: a request, a test or a code trace. |
+| [`money-audit`](skills/money-audit/) | Audit the code paths where an app handles money, credits, points or rewards, and report the bugs that lose money, each with the exact file and line, the quoted code, and a proof (a request, a test or a code trace). |
 
 Maintained by [Moonetix](https://moonetix.com), an affiliate network. MIT licensed, see [LICENSE](LICENSE). To report a vulnerability, see [SECURITY.md](SECURITY.md).
