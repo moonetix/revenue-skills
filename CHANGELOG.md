@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-11-16
+
+### Added
+
+- An issue form for a builder skill that produced code that can lose money or missed a provider or framework, and a link to the private vulnerability report on the new issue page.
+- `privacyPolicyURL` (the README's safety and privacy section), `termsOfServiceURL` (the license) and `screenshots` (`docs/demo.png`) in the Codex `interface` block.
+
+### Changed
+
+- The remaining fixed test values in the trial checkers (the Giftly and model provider keys and the wrong signing secret of the forgery checks) are generated per run as well. The only key-like literal left is the Paddle Python SDK's published test secret in `test/provider-signing.test.mjs`, which the test needs to reproduce that SDK's own vector.
+
 ## [1.3.1] - 2026-11-16
 
 ### Changed
@@ -115,7 +126,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - One exploit per planted bug, run in CI against both versions of the app.
 - Plugin manifests for Claude Code and Codex, and `evals/evals.json` for every skill.
 
-[Unreleased]: https://github.com/moonetix/revenue-skills/compare/v1.3.1...HEAD
+[Unreleased]: https://github.com/moonetix/revenue-skills/compare/v1.3.2...HEAD
+[1.3.2]: https://github.com/moonetix/revenue-skills/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/moonetix/revenue-skills/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/moonetix/revenue-skills/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/moonetix/revenue-skills/compare/v1.1.0...v1.2.0
