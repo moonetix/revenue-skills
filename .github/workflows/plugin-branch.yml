@@ -1,0 +1,57 @@
+name: Plugin branch
+
+# Rebuilds the `plugin` branch from a release tag: only .claude-plugin/, skills/, a short README,
+# LICENSE and SECURITY.md, so the plugin does not ship the practice app, the trials or the demo.
+# The push names refs/heads/plugin explicitly; no other branch and no tag is written.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: plugin-branch
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - name: Skills follow the specification and the shared scripts are in sync
+        run: npm run validate
+      - name: Write the plugin files, fewer than 150 and none from playground, trials, examples or site
+        run: node scripts/build-plugin-branch.mjs "$RUNNER_TEMP/plugin"
+      - name: Commit the files onto the plugin branch and push it if anything changed
+        env:
+          SOURCE: ${{ github.ref_name }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          set -euo pipefail
+          export GIT_INDEX_FILE="$RUNNER_TEMP/plugin.index"
+          git --work-tree="$RUNNER_TEMP/plugin" add --all
+          tree=$(git write-tree)
+          parent=""
+          if git ls-remote --exit-code --heads origin plugin > /dev/null; then
+            git fetch --quiet --depth=1 origin +refs/heads/plugin:refs/remotes/origin/plugin
+            parent=$(git rev-parse refs/remotes/origin/plugin)
+            if [ "$(git rev-parse "$parent^{tree}")" = "$tree" ]; then
+              echo "The plugin branch already holds these files."
+              exit 0
+            fi
+          fi
+          commit=$(git commit-tree "$tree" ${parent:+-p "$parent"} -m "Plugin files from $SOURCE (${GITHUB_SHA::7})")
+          git push --force origin "$commit:refs/heads/plugin"
+          echo "plugin branch: $commit from $SOURCE" >> "$GITHUB_STEP_SUMMARY"
