@@ -16,7 +16,7 @@ Task: Giftly gift card cash-outs at `POST /api/payouts`, `GET /api/payouts` and 
 | P08 | Four cash-outs of 5,000 in a row: the fourth refused | Limits are server-side constants; count limit |
 | P09 | 30,000 then 25,000 refused; two parallel 30,000 requests: one card | Daily amount limit, checked one request at a time per account |
 | P10 | Giftly declines: status `failed`, coins back once, also after a resolve run | Funds return only on `failed`, in the same transaction, once per payout |
-| P11 | Giftly issues the card and drops the connection: coins stay taken, status neither paid nor failed, one card; resolve: `paid`, still one card | `sending` is left only on a definite answer; a timeout is not a failure; resolve asks or repeats with the same key |
+| P11 | Giftly issues the card and drops the connection: coins stay taken, one card; status neither paid nor failed, or `paid` if the app already found the card with a lookup by the same key; after resolve: `paid`, still one card | `sending` is left only on a definite answer; a timeout is not a failure; resolve asks or repeats with the same key |
 | P12 | Giftly answers 500 and issues nothing: coins stay taken; resolve pays once | Same; a repeat uses the same key |
 | P13 | Giftly never answers: the request ends (timeout), coins stay taken; resolve pays once | The adapter sets a timeout; unknown is resolved, never refunded blindly |
 | P14 | 6,000 offer coins reversed, 6,000 bought coins left: cash-out refused, no card | Only matured earned value, net of reversals, is withdrawable |

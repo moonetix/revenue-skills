@@ -272,7 +272,7 @@ export function stripeEvent(base, secret, type, object, { id, age = 0, sign = tr
     type,
     created: t,
     livemode: false,
-    api_version: '2026-10-28.clover',
+    api_version: '2026-10-28.endive',
     data: { object },
   });
   const signature = header ?? timestampedHeader(secret, t, rawBody);
