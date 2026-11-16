@@ -1,0 +1,47 @@
+name: A builder skill got something wrong
+description: A builder skill produced code that can lose money, or does not cover a provider or framework you use.
+title: "Builder: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Leave out anything that identifies a live system, a secret or a person. For a security problem in this repository itself, use the private vulnerability report linked on the new issue page instead.
+  - type: dropdown
+    id: skill
+    attributes:
+      label: Skill
+      options:
+        - add-offerwall
+        - add-payouts
+        - add-referral-program
+        - add-subscriptions
+        - add-usage-credits
+        - build-ledger
+        - build-webhook-endpoint
+        - design-reward-economy
+        - guard-signups
+        - handle-refunds-and-reversals
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What went wrong
+      description: What you asked for, what the agent built, and how it could lose money or break.
+      placeholder: The refund handler took back the credits of a partial refund twice when the provider sent the event again.
+    validations:
+      required: true
+  - type: input
+    id: agent
+    attributes:
+      label: Agent and model
+      placeholder: Claude Code with Claude Sonnet 5.5
+    validations:
+      required: false
+  - type: input
+    id: stack
+    attributes:
+      label: Provider, framework or language
+      placeholder: Paddle Billing, Laravel 12
+    validations:
+      required: false
