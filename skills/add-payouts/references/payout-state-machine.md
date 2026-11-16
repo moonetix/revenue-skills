@@ -221,6 +221,7 @@ export async function resolveSending(pool, provider, policy, limit = 50) {
 
 - `provider.findPayout` asks the provider for the payout by the id you sent or by the stored `provider_ref`, and returns the same four outcomes or `not_found`. Check the provider's documentation for how to look a payout up by your own reference and for how long an idempotency key is honored.
 - A repeat is allowed only with the same key and inside that lifetime. A new key for the same payout is a second transfer. Past the lifetime, the payout stays `sending` and goes to a person.
+- Asking is always safe, and so is a repeat with the same key once your own call has returned or timed out, because the provider deduplicates by the key. Do not hold a payout back from the resolver for a quiet period after its last attempt: when support runs the resolver by hand, it must ask the provider right away. If scheduled checks use a backoff (`next_check_at`), let a manual run ignore it.
 - Never refund on `unknown` or on `not_found`. Only a stated failure returns funds.
 - Alert on every id in `needsPerson` and on any payout that has been `sending` for more than a few hours.
 - If the user wants to try again after a failure, that is a new request with a new payout id.

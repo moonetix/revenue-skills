@@ -1,11 +1,11 @@
 ---
 name: money-audit
-description: Audit the code paths where an app handles money, credits, points or rewards, and report the bugs that lose money, each with the exact file and line, the quoted code, and a proof: a request, a test or a code trace. Use when the user asks to audit, review or pen-test payments, payment webhooks, postbacks, balances, wallets, credits, coupons, referrals, refunds or payouts, asks whether users can cheat or farm the system, or is about to launch something that charges or pays out. Also use to check one money-handling change before it ships.
+description: Audit the code paths where an app handles money, credits, points or rewards, and report the bugs that lose money, each with the exact file and line, the quoted code, and a proof: a request, a test or a code trace. Use when the user asks to audit, review or pen-test payments, payment webhooks, postbacks, balances, wallets, credits, coupons, referrals, refunds or payouts, asks whether users can cheat or farm the system, or is about to launch something that charges or pays out. Also use to check one money-handling change before it ships, or one provider integration such as a Stripe, Paddle, Lemon Squeezy, PayPal or RevenueCat webhook, App Store server notifications or Google Play real-time developer notifications.
 license: MIT
 compatibility: The bundled scripts need Node 20 or newer. Probes are sent only to an app running on the local machine.
 metadata:
   author: moonetix
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # Money audit
@@ -63,6 +63,8 @@ When a flaw fits two classes, file it where its fix lives:
 | An account chosen by the request instead of the session | `secrets-and-access` |
 | A reversal that repeats | `refunds-and-reversals`. A credit that repeats goes under `duplicate-credit`. |
 | A manual balance change that records no actor or reason | `ledger-and-audit-trail`. An adjustment route an ordinary user can reach goes under `secrets-and-access`. |
+
+When the project integrates a payment provider or an app store, read [references/payment-providers.md](references/payment-providers.md) while hunting `unverified-events`, `duplicate-credit` and `refunds-and-reversals`. It lists the shapes to look for in Stripe, Paddle, Lemon Squeezy, PayPal, RevenueCat, App Store and Google Play integrations.
 
 For each class end with one of three results: at least one candidate finding, **clear** (with the files read and the guard that makes it safe), or **not applicable** (the app has no such feature).
 

@@ -190,6 +190,17 @@ SELECT expires_at, SUM(remaining) AS credits
 - **Low balance and upcoming expiry** deserve a notice before they bite, not after.
 - After a spend, show the balance the server returned. Do not subtract in the browser and hope the two agree.
 
+### AI usage on the credits screen
+
+Model calls add a few things to show. The pricing and the bound behind them are in [ai-pricing.md](ai-pricing.md).
+
+- **Before a call:** "up to N credits", the price of the bound. Before an agent run: the run's cap, which the user accepts once.
+- **During a stream:** a live counter is a display the client computes from what it received. The charge is what the server commits at the end.
+- **After a call:** what was charged, and on request the token counts per kind from the stored usage. A cut stream says "charged for the part delivered".
+- **History:** one line per call, or per agent run instead of per step, with the model's display name and the charged amount.
+- **Price changes:** announce a new price version before its `effective_from`. Calls that started before it keep the old prices, so the screen never shows a charge that changed afterwards.
+- **Refused for credits:** the 402 body carries the bound that was needed, so the interface can offer a shorter answer, a smaller model, or a top-up.
+
 ## Entitlement is decided on the server
 
 The client belongs to the user. Anything it holds or sends can be changed.

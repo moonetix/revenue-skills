@@ -1,11 +1,11 @@
 ---
 name: guard-signups
-description: Build sign-up screening and once-only redemption rules that keep sign-up bonuses, free trials, promo codes and referral rewards from being farmed by fake and duplicate accounts. Covers normalized emails, disposable domains, datacenter and Tor addresses, velocity limits, an explainable allow, review or block score, and atomic promo caps. Use when the user wants to stop fake sign-ups, multi-accounting, bonus or trial abuse, promo code farming, or duplicate accounts made with Gmail dots and plus tags.
+description: Build sign-up screening and once-only redemption rules that keep sign-up bonuses, free trials, promo codes and referral rewards from being farmed by fake and duplicate accounts. Covers normalized emails, disposable domains, datacenter and Tor addresses, velocity limits, an explainable allow, review or block score, and atomic promo caps. Covers Next.js with Prisma, Express, Django, Laravel and Rails. Use when the user wants to stop fake sign-ups, multi-accounting, bonus or trial abuse, promo code farming, or duplicate accounts made with Gmail dots and plus tags.
 license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # Guard sign-ups
@@ -43,7 +43,7 @@ Then ask the user once. State the defaults; if the user has no preference, proce
 
 ## Build
 
-Follow the project's stack, naming and test framework. The references show Node, Python and PHP; translate, do not import a new framework. Table definitions are in `assets/signup-guard-schema.sql`.
+Follow the project's stack, naming and test framework. The references show Node, Python and PHP; translate, do not import a new framework. Table definitions are in `assets/signup-guard-schema.sql`. Promo redemption and bonus release in Next.js with Prisma, Express, Django, Laravel and Rails are in [references/stacks.md](references/stacks.md).
 
 1. **Normalize the email and key uniqueness on it.** Add `email_normalized` with a unique index, write it on every path that creates an account or changes an address, and backfill existing rows without merging anyone. Rules per provider, code and the backfill are in [references/identity-and-signals.md](references/identity-and-signals.md).
 2. **Check disposable domains.** Store the list with the app, match the domain and its parents, keep an allow list. Same reference.
@@ -53,7 +53,7 @@ Follow the project's stack, naming and test framework. The references show Node,
 6. **Wire the three outcomes.** Allow: create the account. Review: create the account, keep it usable, hold the bonus, ask for verification. Block: create nothing, show hints, give a contact path. Same reference, including the rules that protect users on shared networks.
 7. **Hold and release bonuses.** A bonus is a `held` grant under a unique key, moved into the balance by a conditional update when its conditions are met. See [references/bonuses-promos-trials.md](references/bonuses-promos-trials.md).
 8. **Make promo codes once per account with an atomic global cap.** A redemption row under a unique key and a conditional counter update, in one transaction, with attempt limits around it. Same reference.
-9. **Stop trial restarts.** Claim the trial under a keyed hash of each identity (normalized email, card fingerprint, phone), in a table that outlives the account. Same reference.
+9. **Stop trial restarts.** Claim the trial under a keyed hash of each identity (normalized email, card fingerprint, phone), in a table that outlives the account. Same reference. The keyed hashes here and in the counters need a server-side secret; if the project has none suitable, adding one is a new required setting, so name it as the first deploy step and make the app refuse to start without it.
 10. **Pay referral rewards for verified activity.** Never at sign-up, once per invited user, reversed when the activity is. Same reference.
 11. **Schedule the upkeep.** A job that refreshes the lists and refuses a failed or shrunken download, and a job that deletes expired counters and old assessments.
 

@@ -17,7 +17,7 @@ if (event.type === 'payment.succeeded') { await credit(order); }
 res.json({ received: true });           // payment.refunded, dispute.created: 200 and nothing else
 ```
 
-When the provider's event catalogue is not in the repository, say so in the report's notes and check the events the code does name. List the provider's reversing events (refund, partial refund, dispute opened, dispute lost, subscription cancelled, subscription expired, payment failed on renewal, store refund notification, postback with a reversal status) and find the code for each. Missing code is the finding.
+When the provider's event catalogue is not in the repository, say so in the report's notes and check the events the code does name. The reversing events of seven common providers, and what their handlers get wrong, are in [payment-providers.md](payment-providers.md). List the provider's reversing events (refund, partial refund, dispute opened, dispute lost, subscription cancelled, subscription expired, payment failed on renewal, store refund notification, postback with a reversal status) and find the code for each. Missing code is the finding.
 
 **The reversal is not tied to the original.** The handler subtracts the amount named in the reversal message instead of the amount it credited for that transaction. Then:
 

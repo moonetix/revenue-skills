@@ -1,11 +1,11 @@
 ---
 name: add-referral-program
-description: Build a referral program whose rewards are paid once, after a verified qualifying event, and taken back when that event is reversed. Codes and attribution are fixed at sign-up, self-referrals and second accounts of the same person are held back, one reward per referred account is enforced by a unique key, and referrers see what is pending. Covers a one-time bonus and a percentage of earnings, with caps. Use when the user asks to add referrals, invite a friend, refer and earn, invite codes or an affiliate bonus for users, or to stop referral farming and self-referrals.
+description: Build a referral program whose rewards are paid once, after a verified qualifying event, and taken back when that event is reversed. Codes and attribution are fixed at sign-up, self-referrals and second accounts of the same person are held back, one reward per referred account is enforced by a unique key, and referrers see what is pending. Covers a one-time bonus and a percentage of earnings, with caps. Covers Next.js with Prisma, Express, Django, Laravel and Rails. Use when the user asks to add referrals, invite a friend, refer and earn, invite codes or an affiliate bonus for users, or to stop referral farming and self-referrals.
 license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # Add a referral program
@@ -41,7 +41,7 @@ Then settle the decisions that belong to the user. Ask once, in one message, and
 
 ## Build
 
-Use the project's migration tool, database layer and conventions. Do not add a framework to make the patterns fit.
+Use the project's migration tool, database layer and conventions. Do not add a framework to make the patterns fit. Attribution and the reward in Next.js with Prisma, Express, Django, Laravel and Rails are in [references/stacks.md](references/stacks.md).
 
 1. **Make sure balance changes go through a posting function.** Rewards are ledger entries of kind `referral` and `referral_reversal` with the referred account's id as reference, posted through the function built by the `build-ledger` skill or the project's equivalent. If there is no ledger yet, the minimum is a `referrals` row per referred account and a balance change that happens only inside a guarded status change of that row. See [references/rewards-and-reversals.md](references/rewards-and-reversals.md), section "Without a ledger".
 

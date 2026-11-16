@@ -1,11 +1,11 @@
 ---
 name: handle-refunds-and-reversals
-description: Make refunds, chargebacks, disputes and reversed conversions take back what the original event granted, exactly once. Covers credits, entitlements, items and dependent rewards such as referral commission, partial refunds, balances that are already spent, the dispute life cycle, and a reversal that arrives before its original. Use when the user says refunded customers keep their credits or access, asks to handle refund or dispute webhooks, chargebacks, clawbacks or reversal postbacks, or wants a rule for negative balances and a report of what was reversed.
+description: Make refunds, chargebacks, disputes and reversed conversions take back what the original event granted, exactly once. Covers credits, entitlements, items and dependent rewards such as referral commission, partial refunds, balances that are already spent, the dispute life cycle, and a reversal that arrives before its original. Maps the refund, dispute and revocation events of Stripe, Paddle, Lemon Squeezy, PayPal, RevenueCat, the App Store and Google Play. Use when the user says refunded customers keep their credits or access, asks to handle refund or dispute webhooks (such as charge.refunded, charge.dispute.created, adjustment.created, order_refunded, PAYMENT.CAPTURE.REFUNDED, an App Store REFUND or a Google Play voided purchase), chargebacks, clawbacks or reversal postbacks, or wants a rule for negative balances and a report of what was reversed.
 license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # Handle refunds and reversals
@@ -18,7 +18,7 @@ Read the project first. Do not ask the user what the code can tell you.
 
 - **Stack.** Language, framework, database, migration tool, test framework, how a transaction is opened.
 - **How value gets in.** Every path that credits: purchases, subscriptions, conversions, bonuses. For each, the record it leaves: an order row, a ledger entry with its kind and reference, a transaction id. A credit that leaves no record cannot be reversed, and step 2 has to fix that first.
-- **Which reversing events arrive.** For each provider, list from its documentation the events that mean money went back: refund, partial refund, dispute opened, won and lost, subscription cancelled or expired, failed renewal, store refund notification, a reversal status in a postback. Then find the code for each. The ones that are acknowledged and ignored are the scope.
+- **Which reversing events arrive.** For each provider, list from its documentation the events that mean money went back: refund, partial refund, dispute opened, won and lost, subscription cancelled or expired, failed renewal, store refund notification, a reversal status in a postback. Then find the code for each. The ones that are acknowledged and ignored are the scope. For Stripe, Paddle, Lemon Squeezy, PayPal, RevenueCat, the App Store and Google Play the list is in [references/provider-reversal-events.md](references/provider-reversal-events.md); confirm it against the pages it cites.
 - **What a purchase grants.** A balance, a plan, items, seats. And what it causes for others: referral commission, cashback, tier progress.
 - **How value leaves.** Spending, transfers, payouts. Whether payouts have a hold period.
 - **Refunds the app issues.** An admin action, a self-service button, a support script.
@@ -42,9 +42,9 @@ Then settle the decisions that belong to the user. Ask once, in one message, and
 
 ## Build
 
-Use the project's database layer, migration tool and conventions. Reversal handlers sit behind the same verification as the handlers that credit: a refund event is checked like a payment event.
+Use the project's database layer, migration tool and conventions. Reversal handlers sit behind the same verification as the handlers that credit: a refund event is checked like a payment event. The route itself in Next.js, Express, Django, Laravel and Rails, with the raw body, the CSRF exemption and the once-only transaction, is in [references/webhook-stacks.md](references/webhook-stacks.md).
 
-1. **Map the events.** Write down, per provider, which documented event becomes a refund, which stage of a dispute, a conversion reversal, or a change of subscription state. Unknown events stay acknowledged and ignored.
+1. **Map the events.** Write down, per provider, which documented event becomes a refund, which stage of a dispute, a conversion reversal, or a change of subscription state, which field gives the amount, and which id links it to the original credit. Unknown events stay acknowledged and ignored. The map for seven providers is in [references/provider-reversal-events.md](references/provider-reversal-events.md).
 
 2. **Make every credit findable.** Each credit has one record that says which account received how much, under a key built from the order id or the provider's transaction id. Dependent rewards are posted with the reference of the entry that caused them. The table of kinds and references is in [references/tie-reversals-to-originals.md](references/tie-reversals-to-originals.md).
 

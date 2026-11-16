@@ -1,11 +1,11 @@
 ---
 name: add-payouts
-description: Build withdrawals as a state machine. The funds are taken from the balance before the provider is called, the call carries an idempotency key, a timeout is resolved by asking the provider and never by sending again, and a failure returns the funds once. Adds a minimum, daily limits, a hold on fresh earnings, an earned-only withdrawable balance, a cool-down after a destination change, a review queue and reconciliation with the provider. Use when the user asks to add payouts, withdrawals, cash-out, redemptions or gift card rewards, or to fix double payouts, lost refunds or missing payout limits.
+description: Build withdrawals as a state machine. The funds are taken from the balance before the provider is called, the call carries an idempotency key, a timeout is resolved by asking the provider and never by sending again, and a failure returns the funds once. Adds a minimum, daily limits, a hold on fresh earnings, an earned-only withdrawable balance, a cool-down after a destination change, a review queue and reconciliation with the provider. Covers Next.js with Prisma, Express, Django, Laravel and Rails. Use when the user asks to add payouts, withdrawals, cash-out, redemptions or gift card rewards, or to fix double payouts, lost refunds or missing payout limits.
 license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # Add payouts
@@ -40,7 +40,7 @@ Then settle the decisions that belong to the user. Ask once, in one message, and
 
 ## Build
 
-Use the project's migration tool, database layer and conventions. Do not add a framework to make the patterns fit.
+Use the project's migration tool, database layer and conventions. Do not add a framework to make the patterns fit. The request and the send claim in Next.js with Prisma, Express, Django, Laravel and Rails are in [references/stacks.md](references/stacks.md).
 
 1. **Make sure balance changes go through a posting function.** Payouts post two kinds of entry, `payout` and `payout_refund`, with the payout id as reference, through the function built by the `build-ledger` skill or the project's equivalent. If there is no ledger yet, the minimum is a conditional debit in the same transaction as the payout row and a refund tied to a guarded status change. The hold and the earned-only rule need dated entries, so build the ledger first when they are wanted. See [references/payout-state-machine.md](references/payout-state-machine.md), section "Without a ledger".
 
@@ -123,7 +123,7 @@ Expected:
 - The race: every request answers with the same payout id, the balance falls by one amount, and the list grows by one.
 - The daily limit: with the default of three requests a day, the fourth is refused with a 4xx and the balance falls by three amounts.
 - The fresh account: refused because nothing has matured, and the balance does not move.
-- With the stand-in provider set to time out, a request leaves the payout `sending` and the balance lowered. Run the resolver command: the payout becomes `paid` or `failed` according to what the stand-in reports, and a failure raises the balance once.
+- With the stand-in provider set to time out, a request leaves the payout `sending` and the balance lowered. Run the resolver command right away, without waiting: the payout becomes `paid` or `failed` according to what the stand-in reports, and a failure raises the balance once.
 
 Done when:
 

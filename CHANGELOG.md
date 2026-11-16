@@ -4,6 +4,40 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-16
+
+### Added
+
+- `trials/`: one trial per builder skill. A fresh agent gets a starter app, a plain request and the one skill; a checker then attacks what it built and prints PASS or FAIL per check. Each trial has `TASK.md`, the starter in `workspace/`, `check.mjs`, `RUBRIC.md` with the rules left to code review, a reference solution that passes every check and a naive one. `trials/README.md` explains how to measure your own agent and has the first results, measured with Claude Opus 5.5 in Claude Code: eight skills passed every check on the first run, and `add-payouts` passed 13 of 16, then 16 of 16 after the fix below.
+- `npm run trials:validate`: runs every checker against its reference solution, which must pass every check, and its naive solution, which must fail exactly the checks listed in `trials/expected.json`. CI runs it.
+- `TRIAL_EXTRA_ENV` for the checkers: settings the built app added and now requires, such as a keyed-hash secret. The checker tries the task's environment first and reports a start that needed the extra settings apart from the attack results, with exit code 3.
+- `build-webhook-endpoint`: one reference per provider, checked against the providers' documentation on 2026-11-15, each with a Sources list: Stripe, Paddle Billing, Lemon Squeezy, PayPal, RevenueCat, App Store Server Notifications V2 and Google Play real-time developer notifications. Each covers authentication, the secret or key and its rotation, the raw body, timestamp and replay, retries and order, the id to deduplicate on, the events that move money, payload versus API, local testing and the bugs that ship. A provider table in `SKILL.md` links them.
+- `build-webhook-endpoint`: `references/webhook-stacks.md`, the same webhook route in Next.js App Router, Express, Django, Laravel and Rails: the raw body, a CSRF exemption for that route only, verifying before parsing, a transaction with a unique key, the answer after the commit, and where the secret lives. `handle-refunds-and-reversals` carries a copy, kept in sync by `npm run sync`.
+- `build-webhook-endpoint`: `assets/sign-test-event.mjs` gains `stripe`, `paddle`, `lemonsqueezy` and `revenuecat` modes that sign test events the way those providers do. `EVENT_ID` signs the same event again with a fresh timestamp.
+- `handle-refunds-and-reversals`: `references/provider-reversal-events.md`, the refund, dispute and revocation events of the same seven providers, with the amount field, how a partial reversal shows, the link to the original credit and what to do when the reversal arrives first.
+- `money-audit`: `references/payment-providers.md`, the code shapes to look for in each provider integration, linked from `SKILL.md`, `unverified-events.md`, `duplicate-credit.md` and `refunds-and-reversals.md`.
+- `add-usage-credits` covers apps that sell credits for LLM calls. `ai-pricing.md`: a versioned price table in integer micro-units per million tokens (input, cached input, cache writes, output with reasoning and thinking tokens, per-call tool charges), the mapping of OpenAI, Anthropic and Google Gemini usage fields onto it, one rounding up after the markup, and the upper bound to reserve. `ai-calls-and-streams.md`: what to settle when a call finishes, fails, times out, is cut mid-stream or the user disconnects, where each provider reports usage in a stream, retries without a second charge, budgets and step limits for multi-step agent runs, and parallel requests from one user. `ai-worked-example.md`: the reserve, call and settle flow in TypeScript and Python with the ledger writes, and the tests to write. Each file lists its sources, read on 2026-11-15.
+- `references/stacks.md` in `build-ledger`, `add-usage-credits`, `add-payouts`, `add-referral-program`, `guard-signups` and `add-offerwall`: each skill's core pattern in Next.js App Router with Prisma, Express with SQL, Django, Laravel and Rails, with the transaction boundary, the row lock or conditional update, the unique key that makes a retry safe, and a table of where each check sits.
+- Evals for providers, for AI credits (a streamed OpenAI call with a disconnecting user, a capped Anthropic agent run) and one framework eval per builder skill above, with new trigger and non-trigger messages.
+- Tests: `test/provider-signing.test.mjs` runs the verification code from the references against the signing helper's output, against the test vectors of Paddle's official SDK tests, and against a throwaway PayPal-style certificate. `test/sync-shared.test.mjs` covers the shared-file sync. `test/repo.test.mjs` checks that every builder skill has a trial and that `trials/` holds no machine paths.
+- `docs/demo.png`, a screenshot of the demo page, at the top of the README.
+
+### Changed
+
+- The README starts with what the skills catch, a one-minute start, a table that picks a skill and a prompt by situation, the skill folder for each agent, and the measured results of the trials and the two audits, followed by the reference sections and a short FAQ.
+- The demo page has a plain technical layout in the Moonetix colors: a title, the facts of the build (attacks, findings, planted bugs found, the audit date, the build date, the Node version and the commit), one recorded attack as a sample, then the attack lab, the report and the skills. It has no sign-up.
+- `build-webhook-endpoint`: the Stripe reference says that a handler which checks `livemode` against a setting needs the matching value in production, listed as a visible deploy step.
+- `guard-signups`: the keyed hashes need a server-side secret; if the project has none suitable, the skill names the new setting as the first deploy step and makes the app refuse to start without it.
+- `add-usage-credits`: the description and the Build steps point to the AI references, and `expiry-and-display.md` has a section on showing AI usage (the bound before a call, the charge after it, cut streams, price changes).
+- The descriptions of `build-webhook-endpoint`, `handle-refunds-and-reversals` and `money-audit` name the providers, and those of the six builder skills with a `stacks.md` name the frameworks, so that they trigger on requests such as "stripe webhook idempotency" or "Our Laravel cash-out endpoint sometimes pays users twice".
+- `scripts/sync-shared.mjs` syncs a list of shared files, not only `probe.mjs`. Each entry names a file and the skill that holds its source, and `--check` names the source of every stale copy.
+- `assets/sign-test-event.mjs` exports its signing functions, prints usage without arguments and exits with 2 on a usage error. The `webhook` and `postback` modes are unchanged.
+- AGENTS.md and CONTRIBUTING.md describe the shared-file list, the trials and how to add one, and where each kind of code example is tested.
+
+### Fixed
+
+- `add-payouts`: the skill now says that asking the provider and repeating a call with the same idempotency key are always safe, that no quiet period may hold a payout back from the resolver, and that a manual resolve asks the provider right away (scheduled backoff does not apply to it). In the trial, the agent had added a waiting window that stopped a manual resolve right after an unknown outcome.
+
 ## [1.1.0] - 2026-11-16
 
 ### Added
@@ -48,6 +82,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - One exploit per planted bug, run in CI against both versions of the app.
 - Plugin manifests for Claude Code and Codex, and `evals/evals.json` for every skill.
 
-[Unreleased]: https://github.com/moonetix/revenue-skills/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/moonetix/revenue-skills/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/moonetix/revenue-skills/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/moonetix/revenue-skills/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/moonetix/revenue-skills/releases/tag/v1.0.0

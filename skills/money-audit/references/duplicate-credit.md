@@ -24,7 +24,7 @@ if (!$seen) {
 
 Read the schema. Without a unique index on `tx_id`, two deliveries that arrive together both pass the check. With one, the second insert fails, but only if the insert happens before or in the same transaction as the credit.
 
-**The wrong key.** Deduplicating on a timestamp, on the user id, on the amount, or on an id the sender chooses freely. The key must be the provider's event or transaction id, scoped to the provider.
+**The wrong key.** Deduplicating on a timestamp, on the user id, on the amount, or on an id the sender chooses freely. The key must be the provider's event or transaction id, scoped to the provider. Some providers send a delivery id that changes on replay next to the event id, and some send no event id at all: see [payment-providers.md](payment-providers.md).
 
 **A memory that forgets.** Event ids kept in a cache with a time-to-live shorter than the provider's retry window (often days), or in process memory that is lost on restart or not shared between workers.
 

@@ -47,7 +47,7 @@ if settings.DEBUG or request.GET.get("test") == "1":      # the caller decides w
 - After verification the handler still checks the content: known order or user, expected amount and currency, an event type that means settled money.
 - Where the provider offers no signature (some store notifications), the handler treats the message as a hint and asks the provider's API for the truth.
 
-Check the provider's current documentation for the exact scheme. Common ones: an HMAC-SHA256 of `timestamp.body` in a header with `t=` and `v1=` parts; an HMAC of the raw body in a single header; a signed JWS payload whose certificate chain must be verified; a shared value in the `Authorization` header; a hash query parameter over named fields for postbacks.
+Check the provider's current documentation for the exact scheme. For Stripe, Paddle, Lemon Squeezy, PayPal, RevenueCat, App Store and Google Play integrations, the shapes to look for are in [payment-providers.md](payment-providers.md). Common ones: an HMAC-SHA256 of `timestamp.body` in a header with `t=` and `v1=` parts; an HMAC of the raw body in a single header; a signed JWS payload whose certificate chain must be verified; a shared value in the `Authorization` header; a hash query parameter over named fields for postbacks.
 
 ## How to prove it
 

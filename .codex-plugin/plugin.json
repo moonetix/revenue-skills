@@ -1,7 +1,7 @@
 {
   "name": "revenue-skills",
   "description": "Agent skills that find and fix the bugs that cost an app money: a money-path audit that quotes the code and attaches a proof to every finding, plus builder skills for ledgers, webhooks, credits, refunds, referrals and payouts.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": {
     "name": "Moonetix"
   },

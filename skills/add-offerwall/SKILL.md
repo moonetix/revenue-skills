@@ -1,11 +1,11 @@
 ---
 name: add-offerwall
-description: Add an offerwall to a website, app, game, bot or community so users earn the app's own currency. Builds the wall link or iframe URL on the server for the signed-in user, a postback endpoint that verifies the network's hash, credits each transaction id once, computes the reward on the server and takes it back once on a reversal, and a hold before fresh earnings can be withdrawn. Use when the user asks to add or integrate an offerwall, survey wall or rewarded offers, to handle or fix a postback or S2S callback, or reports double credits, fake credits or chargebacks from an offer network.
+description: Add an offerwall to a website, app, game, bot or community so users earn the app's own currency. Builds the wall link or iframe URL on the server for the signed-in user, a postback endpoint that verifies the network's hash, credits each transaction id once, computes the reward on the server and takes it back once on a reversal, and a hold before fresh earnings can be withdrawn. Covers Next.js with Prisma, Express, Django, Laravel and Rails. Use when the user asks to add or integrate an offerwall, survey wall or rewarded offers, to handle or fix a postback or S2S callback, or reports double credits, fake credits or chargebacks from an offer network.
 license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # Add an offerwall
@@ -41,7 +41,7 @@ Then settle the decisions that belong to the user. Ask once, in one message, wit
 
 ## Build
 
-Follow the project's stack and conventions. Do not add a framework to make the patterns fit.
+Follow the project's stack and conventions. Do not add a framework to make the patterns fit. The postback route and handler in Next.js with Prisma, Express, Django, Laravel and Rails are in [references/stacks.md](references/stacks.md).
 
 1. **Read the network's documentation** and write down, in the code as comments or in the project's docs: the postback parameters, the signature scheme and exactly which fields it covers, how a reversal is signaled, the answer the network expects, and its retry schedule. [references/network-facts.md](references/network-facts.md) has these for 30 networks as a starting point. The network's dashboard is the authority.
 

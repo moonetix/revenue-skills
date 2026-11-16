@@ -1,11 +1,11 @@
 ---
 name: build-webhook-endpoint
-description: Build an endpoint that receives signed server-to-server events, such as payment webhooks, app store server notifications and affiliate or offerwall postbacks. It verifies the signature over the raw body, or the hash over named query parameters, refuses replays, compares amount and currency with the app's own order, and applies each event exactly once before it answers 2xx. Use when the user asks to add or fix a webhook handler or a postback URL, verify a webhook signature, stop forged or duplicate credits, handle provider retries and out-of-order events, or rotate a webhook secret.
+description: Build an endpoint that receives signed server-to-server events, such as payment webhooks, app store server notifications and affiliate or offerwall postbacks. It verifies the signature over the raw body, or the hash over named query parameters, refuses replays, compares amount and currency with the app's own order, and applies each event exactly once before it answers 2xx. Includes checked notes for Stripe, Paddle, Lemon Squeezy, PayPal, RevenueCat, App Store Server Notifications V2 and Google Play real-time developer notifications, and route patterns for Next.js, Express, Django, Laravel and Rails. Use when the user asks to add or fix a webhook handler or a postback URL, verify a webhook signature (Stripe-Signature, Paddle-Signature, X-Signature, PayPal transmission headers, a signed JWS or a Pub/Sub token), stop forged or duplicate credits, handle provider retries and out-of-order events, or rotate a webhook secret.
 license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # Build a webhook endpoint
@@ -18,10 +18,22 @@ Read the project first. Do not ask the user what the code can tell you.
 
 - **Stack.** Language, framework, database, migration tool, test framework. How a route gets the request body, and whether a global body parser runs before every route.
 - **Existing handlers.** Every route another company's server calls, and every page a provider redirects the user back to. For each: what it verifies, what it stores, what it credits.
-- **The provider's scheme.** Read the provider's current documentation for the signature scheme, the event types, the retry schedule and the time it waits for an answer. Do not write a scheme from memory. If the project already uses the provider's official library, find its verification helper.
+- **The provider's scheme.** Read the provider's current documentation for the signature scheme, the event types, the retry schedule and the time it waits for an answer. Do not write a scheme from memory. If the project already uses the provider's official library, find its verification helper. For the providers in the table below, start from the reference, then confirm against the pages it lists.
 - **What the event refers to.** The app's order, purchase or user record that an event names, where it is created, and whether it is committed before the user is sent to the provider.
 - **The balance.** Whether the project has a ledger posting function, as the `build-ledger` skill builds it, or changes a balance column directly.
 - **Proxies.** What sits in front of the app and whether it rewrites bodies or headers.
+
+Provider references, checked against the providers' documentation on 2026-11-15:
+
+| Provider | Authentication | Deduplicate on | Reference |
+| --- | --- | --- | --- |
+| Stripe | `Stripe-Signature`: HMAC-SHA256 of `t.body`, 5 minute library tolerance | `event.id` | [references/provider-stripe.md](references/provider-stripe.md) |
+| Paddle Billing | `Paddle-Signature`: HMAC-SHA256 of `ts:body`, 5 second SDK tolerance | `event_id` | [references/provider-paddle.md](references/provider-paddle.md) |
+| Lemon Squeezy | `X-Signature`: HMAC-SHA256 of the body, no timestamp | No event id: a business key | [references/provider-lemonsqueezy.md](references/provider-lemonsqueezy.md) |
+| PayPal | Certificate signature over id, time, webhook id and CRC32, or the verify API | Event `id` | [references/provider-paypal.md](references/provider-paypal.md) |
+| RevenueCat | `Authorization` value, optional HMAC header | `event.id` | [references/provider-revenuecat.md](references/provider-revenuecat.md) |
+| App Store Server Notifications V2 | Signed JWS with an Apple certificate chain | `notificationUUID` | [references/provider-apple-app-store.md](references/provider-apple-app-store.md) |
+| Google Play RTDN | Pub/Sub push OIDC token; purchase read from the Play API | `messageId` and the purchase token | [references/provider-google-play.md](references/provider-google-play.md) |
 
 Then settle the decisions that belong to the user. Ask once, in one message, and offer the default.
 
@@ -41,7 +53,7 @@ Then settle the decisions that belong to the user. Ask once, in one message, and
 
 Use the project's router, database layer, migration tool and conventions. Do not add a framework to make the patterns fit.
 
-1. **Give the route the raw body.** Register the route so that it receives the bytes as they arrived, with a size limit, before any body parser. The table of frameworks is in [references/verify-signatures.md](references/verify-signatures.md).
+1. **Give the route the raw body.** Register the route so that it receives the bytes as they arrived, with a size limit, before any body parser, and exempt this route alone from CSRF protection. The table of frameworks is in [references/verify-signatures.md](references/verify-signatures.md). The whole route in Next.js, Express, Django, Laravel and Rails is in [references/webhook-stacks.md](references/webhook-stacks.md).
 
 2. **Load the secret at start-up.** Required, with a minimum length, no default, read as a list so that two can be valid during a rotation. The app does not start without it. Same reference, sections "Secrets" and "Rotation".
 
@@ -98,7 +110,7 @@ Write these tests in the project's own test framework, against a real database o
 - Events delivered in the wrong order end in the same state as in the right order.
 - For a postback: a changed parameter with the old hash, a missing hash, and a parameter sent as an array are refused. The same transaction id credits once.
 
-Then run the app locally with test configuration and probe it. Copy `assets/sign-test-event.mjs` into the project's test tools and replace its two example formulas with the scheme the endpoint verifies. It prints a request file for `scripts/probe.mjs` (run the probe without arguments for the format). `me.json` reads the balance of the test user who owns the order.
+Then run the app locally with test configuration and probe it. Copy `assets/sign-test-event.mjs` into the project's test tools. Its `stripe`, `paddle`, `lemonsqueezy` and `revenuecat` modes sign events the way those providers do; otherwise replace the `webhook` and `postback` example formulas with the scheme the endpoint verifies. PayPal, App Store and Google Play events are signed with the provider's private key and cannot be produced locally: use the provider's test send from its reference, and test the handler with the verification stubbed. It prints a request file for `scripts/probe.mjs` (run the probe without arguments for the format). `me.json` reads the balance of the test user who owns the order.
 
 `scripts/probe.mjs` is the copy in this skill's folder. Run it by its full path, `node <skill directory>/scripts/probe.mjs`, from the project directory, so that the request files resolve against the project.
 
@@ -125,6 +137,13 @@ node scripts/probe.mjs send postback.json --set-query reward=99999 --observe me.
 node scripts/probe.mjs race postback.json --parallel 10 --observe me.json
 ```
 
+With a provider mode, the same probes apply to the provider's event shape. A Paddle event must be sent within five seconds of signing, because that is the SDK tolerance; `EVENT_ID=<id>` signs the same event again with a fresh timestamp.
+
+```bash
+node sign-test-event.mjs stripe checkout.session.completed '{"id":"cs_test_1","client_reference_id":"<pending order>","payment_status":"paid","amount_total":499,"currency":"usd"}' > paid.json
+node sign-test-event.mjs paddle transaction.completed '{"id":"txn_test_1","status":"completed","custom_data":{"order_id":"<pending order>"},"currency_code":"USD","details":{"totals":{"grand_total":"499"}}}' > paid.json
+```
+
 Expected:
 
 - No signature, a changed body with the old signature, and the stale event: each answers 4xx, and the balance does not move.
@@ -143,7 +162,7 @@ Done when:
 ## Out of scope / do not
 
 - This skill does not build the ledger, reverse refunds or pay out. Those are the `build-ledger`, `handle-refunds-and-reversals` and `add-payouts` skills.
-- It does not describe any one provider's API. The provider's documentation decides the scheme, the event names and the fields.
+- The provider references record what the documentation said on the date they carry. The provider's current documentation decides the scheme, the event names and the fields.
 - Do not verify `JSON.stringify(req.body)`. It fails on genuine events, and the usual next step is to switch verification off.
 - Do not make verification depend on the header being present, on a debug flag or on the environment name sent by the caller.
 - Do not mark an order paid on the return URL. The browser controls that request.

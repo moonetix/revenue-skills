@@ -1,11 +1,11 @@
 ---
 name: build-ledger
-description: Build an append-only ledger with a cached balance for points, credits, coins or wallet money. One row per balance change, a unique (kind, reference) key that makes a repeated event harmless, debits that cannot overdraw, and a scheduled reconciliation check. Use when the user asks to add a balance, wallet, credits or points system, wants transaction history or an audit trail, needs to stop double credits or double spending, or has an app with only a balance column and wants to migrate it to a ledger.
+description: Build an append-only ledger with a cached balance for points, credits, coins or wallet money. One row per balance change, a unique (kind, reference) key that makes a repeated event harmless, debits that cannot overdraw, and a scheduled reconciliation check. Covers Next.js with Prisma, Express, Django, Laravel and Rails. Use when the user asks to add a balance, wallet, credits or points system, wants transaction history or an audit trail, needs to stop double credits or double spending, or has an app with only a balance column and wants to migrate it to a ledger.
 license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # Build a ledger
@@ -36,7 +36,7 @@ Then settle the decisions that belong to the user. Ask once, in one message, and
 
 ## Build
 
-Use the project's migration tool, database layer and conventions. Do not add a framework or an ORM to make the patterns below fit.
+Use the project's migration tool, database layer and conventions. Do not add a framework or an ORM to make the patterns below fit. The posting function in Next.js with Prisma, Express, Django, Laravel and Rails, with the transaction, lock and unique key in each, is in [references/stacks.md](references/stacks.md).
 
 1. **Create the schema.** Copy the template for the project's database from `assets/` (`ledger.postgres.sql`, `ledger.mysql.sql`, `ledger.sqlite.sql`) into a migration. Adapt names and key types to the project. If the balance already sits on an existing table, keep it there and point the ledger at that table. The columns and the reason for each are in [references/schema-and-posting.md](references/schema-and-posting.md).
 
