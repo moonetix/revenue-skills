@@ -6,23 +6,46 @@ Use the trials to measure your own agent and model, or to check that a change to
 
 ## Results
 
-Measured on 2026-11-16 with Claude Opus 5.5 running as a Claude Code agent: one non-interactive session per skill, one run per skill (two for `add-payouts`). Every checker ran three times on what the agent built, and each gave the same result all three times. The skill text was the one released in 1.2.0, except for two sentences added after their runs: the Stripe `livemode` deploy note in `build-webhook-endpoint` and the secret sentence in step 9 of `guard-signups`. `add-payouts` ran once before its fix and once with it.
+Measured on 2026-11-16 with Claude Opus 5.5 and Claude Sonnet 5.5, each running as a Claude Code agent: one non-interactive session per run, once with the skill installed and once without it, with the same prompt apart from the line that names the skill. Every checker ran three times on what the agent built, and each gave the same result all three times.
 
-| Skill | Checks | First-run result | Notes |
-| --- | --- | --- | --- |
-| `build-webhook-endpoint` | 20 | 20/20 | |
-| `handle-refunds-and-reversals` | 15 | 15/15 | |
-| `add-offerwall` | 14 | 14/14 | |
-| `guard-signups` | 14 | 14/14 once its newly required secret was supplied | The agent made a keyed-hash secret mandatory and flagged it as a deploy step. The task's environment did not include it, so the run with the task's environment alone did not start. |
-| `build-ledger` | 12 | 12/12 | |
-| `add-referral-program` | 12 | 12/12 | |
-| `add-usage-credits` | 10 | 10/10 | |
-| `design-reward-economy` | 8 | 8/8 | |
-| `add-payouts` | 16 | 13/16 | The agent added a waiting window that stopped a manual resolve right after an unknown outcome (P11 to P13). The skill now says that lookups and repeats with the same key are safe and that a manual resolve must ask the provider right away. A second fresh run with the fixed skill: 16/16. |
+| Skill | Checks | Opus 5.5, with skill | Opus 5.5, without | Sonnet 5.5, with skill | Sonnet 5.5, without |
+| --- | --- | --- | --- | --- | --- |
+| `add-offerwall` | 14 | 14/14 | 3/14 | 13/14 | 2/14 |
+| `handle-refunds-and-reversals` | 15 | 15/15 | 12/15 | 15/15 | 12/15 |
+| `add-referral-program` | 12 | 12/12 | 10/12 | 12/12 | 10/12 |
+| `add-payouts` | 16 | 13/16, after a skill fix 16/16 | 16/16 | 16/16 | 14/16 |
+| `build-webhook-endpoint` | 20 | 20/20 | 19/20 | 20/20 | 19/20 |
+| `build-ledger` | 12 | 12/12 | 12/12 | 12/12 | 11/12 |
+| `guard-signups` | 14 | 14/14, secret supplied | 13/14 | 14/14, secret supplied | 13/14 |
+| `add-usage-credits` | 10 | 10/10 | 10/10 | 10/10 | 10/10 |
+| `design-reward-economy` | 8 | 8/8 | not comparable | 8/8 | not comparable |
+| `add-subscriptions` | 21 | 21/21 | 21/21 | 21/21 | 21/21 |
+
+The failed checks:
+
+| Run | Failed | What happened |
+| --- | --- | --- |
+| `add-offerwall`, Opus without | 11 checks | The agent found no documentation for the network's link and postback hash formats, guessed them, and refused every genuine postback with 403. |
+| `add-offerwall`, Sonnet without | 12 checks | The same: guessed formats, genuine postbacks refused. |
+| `add-offerwall`, Sonnet with skill | O13 | A postback with a fractional reward was refused with 400. The skill now says to round it down once after the hash check and never refuse it. |
+| `handle-refunds-and-reversals`, Opus without | R03, R07, R11 | Each partial refund was rounded up on its own instead of flooring the running total; a signed reversal naming another user was refused, so the account that got the credit kept it. |
+| `handle-refunds-and-reversals`, Sonnet without | R07, R08, R12 | The same R07; an early reversal was answered with 404, so the late credit still paid; the referral bonus stayed after the qualifying purchase was refunded. |
+| `add-referral-program`, both without | F03, F06 | An unknown code blocked the sign-up; a friend who fell below the threshold and qualified again paid a new bonus, so buy, refund, buy farms bonuses. |
+| `add-payouts`, Opus with skill, first run | P11 to P13 | A waiting window stopped a manual resolve right after an unknown outcome. The skill now says that lookups and repeats with the same key are safe and that a resolve must ask the provider at once. The second run passed. |
+| `add-payouts`, Sonnet without | P12, P13 | After a provider error or a timeout, the resolve waited five minutes and then refunded instead of repeating the request with the same key; no double payment. |
+| `build-webhook-endpoint`, both without | W01 | The app started without its signing secret and answered 503 instead. |
+| `build-ledger`, Sonnet without | L04 | Ten parallel purchases against a balance that covered two all succeeded; the balance ended at -1200. |
+| `guard-signups`, both without | G02 | Plus tags were stripped on every domain, so `erin+tag@outlook.com` counted as `erin@outlook.com`. Stricter, not a money loss; Microsoft documents plus addressing only for Exchange Online, and other sources say consumer Outlook.com supports it too. |
+
+`guard-signups` with the skill: both agents made a keyed-hash secret mandatory (the skill asks for a keyed hash) and flagged it as a deploy step, so the app did not start with the task's environment alone; the results above were measured with `TRIAL_EXTRA_ENV` naming that secret. `design-reward-economy` without the skill is not comparable: its checker reads `config/economy.json` in the format of the skill's `economy-check.mjs`, and each agent without the skill wrote its own format and its own check.
+
+`add-subscriptions` does not separate the runs: its task spells out every rule and points at the Stripe API calls to use, and all four runs read the subscription back from Stripe on each event. A first round was discarded before it finished: its task said only that someone who cancels keeps Plus to the end of the paid month, so five checks (S10, S13, S16, S18, S19) tested an immediate-cancel rule the task did not state, and the run without the skill failed exactly those. The task now states the rule, and all four runs above used the new text and the skill text of this release.
+
+The Opus runs with the skill used the skill text released in 1.2.0, except for two sentences added after their runs: the Stripe `livemode` deploy note in `build-webhook-endpoint` and the secret sentence in step 9 of `guard-signups`. The Sonnet runs with the skill used the 1.2.0 text.
 
 What these numbers are and are not:
 
-- One agent and one model, one run per skill. Another agent, another model or another run can do better or worse.
+- One run per cell. Another agent, another model or another run can do better or worse.
 - The checks cover what can be seen from outside the app: HTTP answers, balances, the provider sandboxes and, for `build-ledger`, the database file. Each skill's `RUBRIC.md` lists the rules left to code review, such as no transaction held open during a provider call.
 - The starter apps and tasks were written for this repository, alongside the skills.
 - After these runs, check P06 of `add-payouts` was made stricter: the Giftly sandbox now takes 300 ms to answer during it, so a check-then-debit race shows every time. The second `add-payouts` run still passes all 16 checks with it.
@@ -35,7 +58,7 @@ trials/
   README.md               this file
   expected.json           per skill: the number of checks and the checks the naive solution fails
   lib/                    shared checker code: start the app, sign events, race requests,
-                          the Giftly and model provider sandboxes
+                          the Giftly, model provider and Stripe API sandboxes
   <skill>/
     TASK.md               the request, as a user would type it
     workspace/            the starter app the agent extends
@@ -58,6 +81,7 @@ The starter app is Coinbarn, a small backend of a rewards app (Node 22.13 or new
 | `add-usage-credits` | Credits for a free `/api/ask` assistant with a streaming model client | 10 |
 | `design-reward-economy` | A small economy service with losing numbers and a float conversion; the owner's data is in `data/owner-notes.md` | 8 |
 | `add-payouts` | The payouts route and table, the Giftly client, the payout limits and the resolve route | 16 |
+| `add-subscriptions` | Anything that grants or removes Coinbarn Plus: the subscription events, the access check behind `/api/plus/perk`, the monthly coins and the sync route. The checkout and a Stripe API sandbox are there | 21 |
 
 ## Run a trial
 
@@ -96,7 +120,7 @@ The agent must not be able to read the checker or the solutions, so it works in 
 
 4. Read the agent's code against the rules under "Rules reviewed by reading the code" in `trials/<skill>/RUBRIC.md`, and record the total, the failed checks with their reasons, and your verdicts on those rules.
 
-The checker starts `node server.mjs` in the folder on a free port on 127.0.0.1, with only the environment variables the task names (plus `PATH` and `HOME`), and runs its own Stripe signing, Giftly sandbox and model provider sandbox in the same process. It stops everything when it ends, and writes only to `trials/.run/` (the SQLite file of `build-ledger`), which it removes again. A run takes 2 to 60 seconds; `add-payouts` and `add-usage-credits` are the slowest because they wait for holds and timeouts.
+The checker starts `node server.mjs` in the folder on a free port on 127.0.0.1, with only the environment variables the task names (plus `PATH` and `HOME`), and runs its own Stripe signing, Giftly sandbox, model provider sandbox and Stripe API sandbox in the same process. It stops everything when it ends, and writes only to `trials/.run/` (the SQLite file of `build-ledger`), which it removes again. A run takes 2 to 60 seconds; `add-payouts` and `add-usage-credits` are the slowest because they wait for holds and timeouts.
 
 ### When the app needs a setting of its own
 

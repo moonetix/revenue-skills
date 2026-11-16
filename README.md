@@ -1,11 +1,11 @@
 # revenue-skills
 
-**Agent skills that find and fix the bugs that cost your app money: a money-path audit where every finding carries a proof, and skills that build webhooks, ledgers, credits, refunds, referrals and payouts correctly.**
+**Agent skills that find and fix the bugs that cost your app money: a money-path audit where every finding carries a proof, and skills that build webhooks, ledgers, credits, subscriptions, refunds, referrals and payouts correctly.**
 
 [![CI](https://github.com/moonetix/revenue-skills/actions/workflows/ci.yml/badge.svg)](https://github.com/moonetix/revenue-skills/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Agent Skills](https://img.shields.io/badge/format-Agent%20Skills-1f6feb)](https://agentskills.io)
-[![Skills: 10](https://img.shields.io/badge/skills-10-brightgreen)](#pick-by-situation)
+[![Skills: 11](https://img.shields.io/badge/skills-11-brightgreen)](#pick-by-situation)
 [![Zero dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen)](package.json)
 
 [![The demo page: a practice app's first version and its fixed version answering the same attack, with the audit's numbers above](docs/demo.png)](https://moonetix.github.io/revenue-skills/)
@@ -27,7 +27,7 @@ Each of these looks fine in a demo and costs money in production:
 
 ## Try it in a minute
 
-Install all ten skills with the [skills installer](https://github.com/vercel-labs/skills). It asks which agents to install into, and needs Node 22.20 or newer; the scripts inside the skills run on Node 20 or newer.
+Install all eleven skills with the [skills installer](https://github.com/vercel-labs/skills). It asks which agents to install into, and needs Node 22.20 or newer; the scripts inside the skills run on Node 20 or newer.
 
 ```bash
 npx skills add moonetix/revenue-skills
@@ -74,6 +74,7 @@ The agent picks the skill from its description. If it does not, name the skill i
 | --- | --- | --- |
 | I sell credits in an AI app | [`add-usage-credits`](skills/add-usage-credits/) | `Charge credits for every AI request: hold the most it can cost before the model call, charge what the provider reports after it, and never charge twice for a retry or a cut stream.` |
 | I take payments with Stripe, Paddle or Lemon Squeezy | [`build-webhook-endpoint`](skills/build-webhook-endpoint/), then [`handle-refunds-and-reversals`](skills/handle-refunds-and-reversals/) | `Add the Stripe webhook that credits paid orders exactly once, then make refunds and disputes take the credits back.` |
+| I sell subscriptions with Stripe, the App Store or Google Play | [`add-subscriptions`](skills/add-subscriptions/) | `Add our monthly Pro plan with Stripe Billing: access only while it is paid, a few days of grace when a renewal fails, access until the period end after a cancel, the monthly credits once per paid month, and a job that checks our data against Stripe.` |
 | I sell in-app purchases on Apple or Google | [`build-webhook-endpoint`](skills/build-webhook-endpoint/), then [`handle-refunds-and-reversals`](skills/handle-refunds-and-reversals/) | `Grant App Store and Google Play purchases from their server notifications, and take them back on refunds and revocations.` |
 | I pay users out | [`add-payouts`](skills/add-payouts/) | `Add cash-outs that can never pay twice, with a minimum, daily limits and a hold on new earnings.` |
 | I run a rewards app or an offerwall | [`add-offerwall`](skills/add-offerwall/), [`design-reward-economy`](skills/design-reward-economy/) | `Add an offerwall with a postback that credits each conversion once and handles reversals, then check that our coin rate and bonuses do not lose money.` |
@@ -84,21 +85,33 @@ The agent picks the skill from its description. If it does not, name the skill i
 
 ## Measured
 
-**The builder skills, in trials.** A fresh coding agent (Claude Opus 5.5 running as a Claude Code agent, one non-interactive session per skill) got a starter app, a plain request and the one skill. An automated checker then attacked what it built.
+**The builder skills, in trials.** A fresh coding agent got a starter app and a plain request, once with the one skill installed and once without it. An automated checker then attacked what it built. Each cell is one agent run (Claude Code, one non-interactive session), and each gave the same result in three checker runs.
 
-| Skill | Checks | First-run result | Notes |
-| --- | --- | --- | --- |
-| `build-webhook-endpoint` | 20 | 20/20 | |
-| `handle-refunds-and-reversals` | 15 | 15/15 | |
-| `add-offerwall` | 14 | 14/14 | |
-| `guard-signups` | 14 | 14/14 once its newly required secret was supplied | The agent made a keyed-hash secret mandatory and flagged it as a deploy step; the app did not start with the task's environment alone. |
-| `build-ledger` | 12 | 12/12 | |
-| `add-referral-program` | 12 | 12/12 | |
-| `add-usage-credits` | 10 | 10/10 | |
-| `design-reward-economy` | 8 | 8/8 | |
-| `add-payouts` | 16 | 13/16 | A waiting window the agent added stopped a manual resolve right after an unknown outcome. A second fresh run after a fix to the skill: 16/16. |
+| Skill | Checks | Opus 5.5, with skill | Opus 5.5, without | Sonnet 5.5, with skill | Sonnet 5.5, without |
+| --- | --- | --- | --- | --- | --- |
+| `add-offerwall` | 14 | 14/14 | 3/14 | 13/14 | 2/14 |
+| `handle-refunds-and-reversals` | 15 | 15/15 | 12/15 | 15/15 | 12/15 |
+| `add-referral-program` | 12 | 12/12 | 10/12 | 12/12 | 10/12 |
+| `add-payouts` | 16 | 13/16, after a skill fix 16/16 | 16/16 | 16/16 | 14/16 |
+| `build-webhook-endpoint` | 20 | 20/20 | 19/20 | 20/20 | 19/20 |
+| `build-ledger` | 12 | 12/12 | 12/12 | 12/12 | 11/12 |
+| `guard-signups` | 14 | 14/14 [1] | 13/14 [2] | 14/14 [1] | 13/14 [2] |
+| `add-usage-credits` | 10 | 10/10 | 10/10 | 10/10 | 10/10 |
+| `design-reward-economy` | 8 | 8/8 | [3] | 8/8 | [3] |
+| `add-subscriptions` | 21 | 21/21 | 21/21 [4] | 21/21 | 21/21 [4] |
 
-Each result was the same in three checker runs. One agent and one model, with one run per skill (two for `add-payouts`). The checks cover what can be seen from outside the app; each trial's `RUBRIC.md` lists the rules left to code review. The starter apps were written for this repository, and the runs used the skill text released in 1.2.0 apart from two later sentences ([details](trials/README.md#results)).
+What went wrong without the skill:
+
+- `add-offerwall`: neither agent found the network's postback format, both guessed the hash, and every genuine postback was refused.
+- `handle-refunds-and-reversals`: a reversal naming another user was ignored, so the account that got the credit kept it; Opus rounded each partial refund up, Sonnet answered an early reversal with 404 so the late credit still paid, and kept a referral bonus after the qualifying purchase was refunded.
+- `add-referral-program`: buy, refund, buy paid the referral bonus again each time, and an unknown code blocked the sign-up.
+- `add-payouts` (Sonnet): after a provider error or timeout, a manual resolve waited and then refunded instead of repeating the request with the same key.
+- `build-webhook-endpoint`: the app started without its signing secret.
+- `build-ledger` (Sonnet): ten parallel purchases against a balance that covered two all went through, leaving the balance at -1200.
+
+[1] Once its newly required secret was supplied: with the skill, both agents made a keyed-hash secret mandatory and flagged it as a deploy step, so the app did not start with the task's environment alone. [2] Plus tags were stripped on every domain; stricter than the check, not a money loss, and providers' own pages disagree about consumer Outlook.com. [3] Not comparable: the checker reads `config/economy.json` in the format of the skill's check script, and without the skill each agent wrote its own format. [4] The subscription task spells out every rule, from the grace period to an immediate cancel, and points at the Stripe API docs, so both models met it without the skill too: this trial shows the skill does no harm, not that it helps.
+
+With the skill, Sonnet refused an offerwall postback with a fractional reward (13/14); the skill now says to round it down once. Opus's first `add-payouts` run added a waiting window that blocked a manual resolve; the skill was fixed and a second run passed. One run per cell: another run, agent or model can do better or worse. The checks cover what can be seen from outside the app, and each trial's `RUBRIC.md` lists the rules left to code review. The starter apps were written for this repository ([details](trials/README.md#results)).
 
 **The audit, on two codebases.** One `money-audit` run on each, with Claude Fable 5.2 in Claude Code, on the skill as it was before 1.0.0 (2026-11-13 and 2026-11-14):
 
