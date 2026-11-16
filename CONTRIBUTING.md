@@ -10,6 +10,7 @@ The rules behind every change are in [AGENTS.md](AGENTS.md). This page is the sh
 - Keep `SKILL.md` short. Detail goes in `references/`, one level deep, and every reference is mentioned in `SKILL.md`.
 - Code in a skill must be correct. Syntax-check every snippet you can run, and say which ones you could not. The patterns that close the practice app's planted bugs are tested in `playground/fixed/`; the provider verification code runs in `test/provider-signing.test.mjs`; other provider, AI and framework snippets are syntax-checked; and the trials check what an agent builds with the skill. [AGENTS.md](AGENTS.md#rules-for-changes) has the details.
 - `evals/evals.json` (tasks with assertions) and `evals/eval_queries.json` (messages that should and should not trigger the skill) follow the [Agent Skills eval format](https://agentskills.io/skill-creation/evaluating-skills). Nothing in this repository runs them; they are there for you to run with your agent.
+- A builder skill runs the probe from the project directory: the first line of its Verify commands is `PROBE=<skill directory>/scripts/probe.mjs`, and every call is `node "$PROBE" ...`.
 - Shared files are edited only in their source skill: `scripts/probe.mjs` in `money-audit` and `references/webhook-stacks.md` in `build-webhook-endpoint`. The list is at the top of `scripts/sync-shared.mjs`. Run `npm run sync` to copy them into the other skills.
 - A new skill also needs a row in the README tables and a line in `CHANGELOG.md`, and a new builder skill needs a trial. The steps are in [AGENTS.md](AGENTS.md#adding-a-skill).
 
@@ -44,6 +45,14 @@ npm run trials:validate  # every trial checker against its reference and naive s
 ```
 
 Node 22.13 or newer. There is nothing to install.
+
+## Releases and the plugin branch
+
+A release bumps the version in `package.json`, `package-lock.json`, every manifest and every skill's `metadata.version` (`test/repo.test.mjs` checks that they agree), and pushes a `v*` tag. The tag starts `.github/workflows/plugin-branch.yml`, which runs `npm run validate`, writes the plugin files with `node scripts/build-plugin-branch.mjs <folder>` and commits them onto the `plugin` branch: `.claude-plugin/`, `skills/`, a short README, `LICENSE` and `SECURITY.md`, nothing else. That keeps the practice app, the trials and their test secrets out of an installed plugin. The workflow can also be started by hand; it pushes only when the files changed and writes no other branch and no tag. Run `node scripts/build-plugin-branch.mjs --list` to see the file list, and never edit the `plugin` branch by hand.
+
+## Related repositories
+
+Libraries and data by the same maintainer that the builder skills can lean on: [referral-engine](https://github.com/moonetix/referral-engine), [signup-guard](https://github.com/moonetix/signup-guard), [reward-economy-kit](https://github.com/moonetix/reward-economy-kit), [affiliate-postback-macros](https://github.com/moonetix/affiliate-postback-macros), [datacenter-ip-ranges](https://github.com/moonetix/datacenter-ip-ranges), [offerwall-postback-handlers](https://github.com/moonetix/offerwall-postback-handlers), [offerwall-fraud-playbook](https://github.com/moonetix/offerwall-fraud-playbook).
 
 ## Style
 

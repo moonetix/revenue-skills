@@ -17,9 +17,12 @@ This file is for coding agents and people changing the repository itself. To use
 | `trials/` | One trial per builder skill: `TASK.md`, the starter app in `workspace/`, `check.mjs`, `RUBRIC.md`, `_reference/` and `_naive/`, with the shared checker code in `lib/`. `expected.json` lists the checks each naive solution fails. `trials/README.md` explains how to run a trial with an agent and has the published results. |
 | `examples/coinjar-audit/`, `examples/referral-engine-audit/` | The output of one audit each, of `playground/vulnerable/` and of referral-engine v1.0.0, kept as it was written apart from machine paths. Do not edit them by hand; replace them with a new run. Each has a README. |
 | `scripts/` | `validate-skills.mjs`, `sync-shared.mjs`, `build-site.mjs`, `validate-trials.mjs`, and `check-examples.mjs`, which checks both example audits against the code they describe. |
-| `plugin.json`, `.claude-plugin/`, `.codex-plugin/`, `.agents/plugins/`, `gemini-extension.json` | Plugin manifests: Agent Plugins, Claude Code, Codex and Gemini CLI. Each carries the repository version. |
+| `plugin.json`, `.claude-plugin/`, `.codex-plugin/`, `.agents/plugins/`, `gemini-extension.json` | Plugin manifests: Agent Plugins, Claude Code, Codex and Gemini CLI. Each carries the repository version. The Codex manifest's `interface` points at `assets/icon.svg`, a copy of `site/favicon.svg`. |
+| `package-lock.json`, `.codexignore` | The lockfile of this zero-dependency package, and the folders left out of the Codex package. Both are scored by the awesome-codex-plugins scanner that CI runs. |
+| `scripts/build-plugin-branch.mjs`, `.github/workflows/plugin-branch.yml` | The `plugin` branch: on every `v*` tag the workflow writes `.claude-plugin/`, `skills/`, a short README, `LICENSE` and `SECURITY.md` and pushes them to that branch only. `test/plugin-branch.test.mjs` keeps the list under 150 files and free of `playground/`, `trials/`, `examples/` and `site/`. |
 | `site/` | The demo page. `scripts/build-site.mjs` records every attack against both apps and writes `_site/`. |
 | `docs/demo.png` | The screenshot of the demo page at the top of the README, 1440 by 900, light theme. Retake it when the top of the page changes. |
+| `docs/social-preview.png`, `docs/social-preview.html` | The repository's social preview, 1280 by 640, uploaded by hand in the repository settings, and the page it is screenshotted from. `npm run site` copies the image into `_site/` as the demo's `og:image`. |
 
 ## Commands
 
@@ -53,6 +56,6 @@ There are no dependencies to install.
 1. Create `skills/<name>/SKILL.md` with the frontmatter the other skills use. The description says what the skill does and when to use it, in the words a user would type.
 2. Add `references/` for patterns, `evals/evals.json` with three eval cases (prompt, expected output, assertions) and `evals/eval_queries.json` with at least five messages that should trigger the skill and three that should not.
 3. If the skill verifies its work with the probe, mention `scripts/probe.mjs` in `SKILL.md` and run `npm run sync`.
-4. If the skill runs a script, say in its Verify section that the path is relative to the skill folder.
+4. If the skill runs a script, its Verify commands run from the project directory and name the script by the skill folder: the probe as `PROBE=<skill directory>/scripts/probe.mjs` on the first line, then `node "$PROBE" ...`.
 5. For a builder skill, add a trial under `trials/<name>/` with `TASK.md`, `workspace/`, `check.mjs`, `RUBRIC.md`, `_reference/` and `_naive/`, and its entry in `trials/expected.json`. The steps are in [trials/README.md](trials/README.md#add-a-trial-for-a-new-skill); `test/repo.test.mjs` fails until the trial exists.
 6. Link the skill from the skill tables and the situation table in `README.md`, add a line to `CHANGELOG.md`, and run `npm run validate && npm test && npm run trials:validate`.

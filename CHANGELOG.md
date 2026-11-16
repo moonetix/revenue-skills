@@ -4,6 +4,21 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- The `plugin` branch: `.github/workflows/plugin-branch.yml` rebuilds it on every `v*` tag with `scripts/build-plugin-branch.mjs`, holding only `.claude-plugin/`, `skills/`, a short README, `LICENSE` and `SECURITY.md`, so an installed plugin carries no practice app, trials or test secrets. `/plugin marketplace add moonetix/revenue-skills@plugin` installs from it. `test/plugin-branch.test.mjs` keeps it under 150 files.
+- `displayName` in `.claude-plugin/plugin.json`, and the `interface` block in `.codex-plugin/plugin.json` (display name, descriptions, developer, category, capabilities, links, three starter prompts, brand colors and `assets/icon.svg`).
+- A CI job that runs the HOL AI Plugin Scanner with `min_score: 75`, as the awesome-codex-plugins guide shows, plus `package-lock.json` and `.codexignore`.
+- `docs/social-preview.png`, built from `docs/social-preview.html`. The demo page uses it as its `og:image`, with a `twitter:card`, and shows the skills version in its facts.
+
+### Changed
+
+- The README is about a third shorter, with one install section.
+- The Verify commands of the eight builder skills that use the probe set `PROBE=<skill directory>/scripts/probe.mjs` first and call `node "$PROBE"`, so the path is unambiguous when run from the project directory.
+- `build-webhook-endpoint`, `add-offerwall` and `handle-refunds-and-reversals` each say when to use which of the three.
+- `add-offerwall` lists its networks in alphabetical order.
+- The demo page has one maintainer credit.
+
 ## [1.2.0] - 2026-11-16
 
 ### Added
