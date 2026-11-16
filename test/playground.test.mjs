@@ -4,9 +4,11 @@ import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { test } from 'node:test';
 import { runProbe } from '../skills/money-audit/scripts/probe.mjs';
+import { defaults as coinjarDefaults } from '../playground/vulnerable/config.mjs';
 
-const SECRETS = { webhookSecret: 'whsec_test_not_secret', postbackKey: 'test_postback_key_not_secret' };
-const FIXED = { ...SECRETS, adminKey: 'test_admin_key_not_secret_0123456789', payoutHoldSeconds: 0 };
+// Both versions use the practice app's built-in test values, so the attacks sign with the same ones.
+const SECRETS = { webhookSecret: coinjarDefaults.webhookSecret, postbackKey: coinjarDefaults.postbackKey };
+const FIXED = { ...SECRETS, adminKey: 'not-a-secret-'.repeat(3), payoutHoldSeconds: 0 };
 
 async function start(variant, config = {}) {
   const { createApp } = await import(`../playground/${variant}/app.mjs`);

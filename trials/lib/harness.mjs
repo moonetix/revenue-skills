@@ -9,6 +9,10 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import { timestampedHeader } from '../../skills/build-webhook-endpoint/assets/sign-test-event.mjs';
 
+// A fresh value per run for each secret the checker hands to the app, so no key-like literal
+// sits in the repository and nothing can depend on a fixed test value.
+export const trialSecret = (prefix) => `${prefix}${randomBytes(18).toString('hex')}`;
+
 export { sleep };
 export const LIB_DIR = path.dirname(fileURLToPath(import.meta.url));
 export const RUN_ID = randomBytes(3).toString('hex');

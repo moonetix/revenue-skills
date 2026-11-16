@@ -3,13 +3,13 @@
 //   node check.mjs <folder>
 import { randomBytes } from 'node:crypto';
 import { createStripe } from '../lib/fake-stripe.mjs';
-import { client, is4xx, notStarted, ok, race, report, sleep, startTrialApp, statuses, targetFolder, uid } from '../lib/harness.mjs';
+import { client, is4xx, notStarted, ok, race, report, sleep, startTrialApp, statuses, targetFolder, trialSecret, uid } from '../lib/harness.mjs';
 import { timestampedHeader } from '../../skills/add-subscriptions/assets/sign-test-event.mjs';
 
 const folder = targetFolder();
-const SECRET = 'whsec_trial_secret_0123456789abcdef';
-const API_KEY = 'sk_test_trial_0123456789abcdef';
-const ADMIN = 'trial_admin_key_0123456789abcdef0123456789';
+const SECRET = trialSecret('whsec_');
+const API_KEY = trialSecret('sk_test_');
+const ADMIN = trialSecret('admin_');
 const GRACE = 3;
 const MONTH = 30 * 24 * 3600;
 const stripe = createStripe({ key: API_KEY });
@@ -19,7 +19,7 @@ const ENV = {
   STRIPE_SECRET_KEY: API_KEY,
   STRIPE_API_URL: `http://127.0.0.1:${stripePort}`,
   PLUS_GRACE_SECONDS: String(GRACE),
-  REWARDLY_POSTBACK_KEY: 'rewardly_trial_key_0123456789',
+  REWARDLY_POSTBACK_KEY: trialSecret('rewardly_'),
   ADMIN_KEY: ADMIN,
 };
 const r = report('add-subscriptions');

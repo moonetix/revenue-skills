@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 // Checker for the build-webhook-endpoint trial: Stripe Checkout webhooks credit paid orders.
 //   node check.mjs <folder>
-import { client, is4xx, notStarted, ok, race, refusesToStart, report, startTrialApp, statuses, stripeEvent, targetFolder } from '../lib/harness.mjs';
+import { client, is4xx, notStarted, ok, race, refusesToStart, report, startTrialApp, statuses, stripeEvent, targetFolder, trialSecret } from '../lib/harness.mjs';
 import { timestampedHeader } from '../../skills/build-webhook-endpoint/assets/sign-test-event.mjs';
 
 const folder = targetFolder();
-const SECRET = 'whsec_trial_secret_0123456789abcdef';
+const SECRET = trialSecret('whsec_');
 const ENV = {
   STRIPE_WEBHOOK_SECRET: SECRET,
-  REWARDLY_POSTBACK_KEY: 'rewardly_trial_key_0123456789',
-  ADMIN_KEY: 'trial_admin_key_0123456789abcdef0123456789',
+  REWARDLY_POSTBACK_KEY: trialSecret('rewardly_'),
+  ADMIN_KEY: trialSecret('admin_'),
 };
 const r = report('build-webhook-endpoint');
 

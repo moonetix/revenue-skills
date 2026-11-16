@@ -10,6 +10,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { score } from '../playground/score.mjs';
 import { CLASSES, validate } from '../skills/money-audit/scripts/validate-findings.mjs';
+import { defaults as coinjarDefaults } from '../playground/vulnerable/config.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, '_site');
@@ -17,8 +18,9 @@ const PAGE_URL = 'https://moonetix.github.io/revenue-skills/';
 const OG_IMAGE = 'social-preview.png';
 const read = (...parts) => readFileSync(join(root, ...parts), 'utf8');
 
-const SECRETS = { webhookSecret: 'whsec_test_not_secret', postbackKey: 'test_postback_key_not_secret' };
-const FIXED = { ...SECRETS, adminKey: 'test_admin_key_not_secret_0123456789', payoutHoldSeconds: 0 };
+// Both versions use the practice app's built-in test values, so the attacks sign with the same ones.
+const SECRETS = { webhookSecret: coinjarDefaults.webhookSecret, postbackKey: coinjarDefaults.postbackKey };
+const FIXED = { ...SECRETS, adminKey: 'not-a-secret-'.repeat(3), payoutHoldSeconds: 0 };
 const OLD_ADMIN_KEY = 'coinjar-admin';
 
 const CLASS_TITLES = {

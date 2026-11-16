@@ -2,12 +2,12 @@
 // Checker for the add-payouts trial: Giftly gift card cash-outs.
 //   node check.mjs <folder>
 import { createGiftly } from '../lib/fake-giftly.mjs';
-import { client, notStarted, ok, race, report, rewardlyUrl, sleep, startTrialApp, statuses, stripeEvent, targetFolder, uid } from '../lib/harness.mjs';
+import { client, notStarted, ok, race, report, rewardlyUrl, sleep, startTrialApp, statuses, stripeEvent, targetFolder, trialSecret, uid } from '../lib/harness.mjs';
 
 const folder = targetFolder();
-const SECRET = 'whsec_trial_secret_0123456789abcdef';
-const KEY = 'rewardly_trial_key_0123456789';
-const ADMIN = 'trial_admin_key_0123456789abcdef0123456789';
+const SECRET = trialSecret('whsec_');
+const KEY = trialSecret('rewardly_');
+const ADMIN = trialSecret('admin_');
 const HOLD = 2;
 const giftly = createGiftly();
 const giftlyPort = await giftly.listen();

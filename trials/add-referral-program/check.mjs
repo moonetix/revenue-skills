@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // Checker for the add-referral-program trial.
 //   node check.mjs <folder>
-import { RUN_ID, client, notStarted, ok, race, report, rewardlyUrl, startTrialApp, stripeEvent, targetFolder, uid } from '../lib/harness.mjs';
+import { client, notStarted, ok, race, report, rewardlyUrl, RUN_ID, startTrialApp, stripeEvent, targetFolder, trialSecret, uid } from '../lib/harness.mjs';
 
 const folder = targetFolder();
-const SECRET = 'whsec_trial_secret_0123456789abcdef';
-const KEY = 'rewardly_trial_key_0123456789';
-const ADMIN = 'trial_admin_key_0123456789abcdef0123456789';
+const SECRET = trialSecret('whsec_');
+const KEY = trialSecret('rewardly_');
+const ADMIN = trialSecret('admin_');
 const ENV = { STRIPE_WEBHOOK_SECRET: SECRET, REWARDLY_POSTBACK_KEY: KEY, ADMIN_KEY: ADMIN };
 const r = report('add-referral-program');
 const app = await startTrialApp(folder, ENV);

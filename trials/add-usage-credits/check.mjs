@@ -2,12 +2,12 @@
 // Checker for the add-usage-credits trial: the assistant charges coins by reported token usage.
 //   node check.mjs <folder>
 import { createLlm } from '../lib/fake-llm.mjs';
-import { client, notStarted, ok, race, report, sleep, startTrialApp, statuses, targetFolder, uid } from '../lib/harness.mjs';
+import { client, notStarted, ok, race, report, sleep, startTrialApp, statuses, targetFolder, trialSecret, uid } from '../lib/harness.mjs';
 
 const folder = targetFolder();
-const SECRET = 'whsec_trial_secret_0123456789abcdef';
-const KEY = 'rewardly_trial_key_0123456789';
-const ADMIN = 'trial_admin_key_0123456789abcdef0123456789';
+const SECRET = trialSecret('whsec_');
+const KEY = trialSecret('rewardly_');
+const ADMIN = trialSecret('admin_');
 const llm = createLlm();
 const llmPort = await llm.listen();
 const ENV = {

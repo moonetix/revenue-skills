@@ -4,12 +4,12 @@
 //   TRIAL_EXTRA_ENV="SIGNUP_KEY_SECRET=<value>" node check.mjs <folder>
 // The second form is for an app that added a required setting of its own (a keyed-hash secret,
 // for example): the checker first tries the task's environment and reports the result apart.
-import { RUN_ID, client, is4xx, notStarted, ok, race, report, rewardlyUrl, startTrialApp, statuses, targetFolder, uid } from '../lib/harness.mjs';
+import { client, is4xx, notStarted, ok, race, report, rewardlyUrl, RUN_ID, startTrialApp, statuses, targetFolder, trialSecret, uid } from '../lib/harness.mjs';
 
 const folder = targetFolder();
-const SECRET = 'whsec_trial_secret_0123456789abcdef';
-const KEY = 'rewardly_trial_key_0123456789';
-const ADMIN = 'trial_admin_key_0123456789abcdef0123456789';
+const SECRET = trialSecret('whsec_');
+const KEY = trialSecret('rewardly_');
+const ADMIN = trialSecret('admin_');
 const ENV = { STRIPE_WEBHOOK_SECRET: SECRET, REWARDLY_POSTBACK_KEY: KEY, ADMIN_KEY: ADMIN };
 const r = report('guard-signups');
 const app = await startTrialApp(folder, ENV);

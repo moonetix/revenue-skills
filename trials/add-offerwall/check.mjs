@@ -2,13 +2,13 @@
 // Checker for the add-offerwall trial: Moonetix wall link, postbacks, reversals and the cash-out hold.
 //   node check.mjs <folder>
 import { createGiftly } from '../lib/fake-giftly.mjs';
-import { client, hmacHex, is4xx, notStarted, ok, race, refusesToStart, report, sleep, startTrialApp, statuses, stripeEvent, targetFolder, uid } from '../lib/harness.mjs';
+import { client, hmacHex, is4xx, notStarted, ok, race, refusesToStart, report, sleep, startTrialApp, statuses, stripeEvent, targetFolder, trialSecret, uid } from '../lib/harness.mjs';
 
 const folder = targetFolder();
-const SECRET = 'whsec_trial_secret_0123456789abcdef';
-const ADMIN = 'trial_admin_key_0123456789abcdef0123456789';
-const KEY = 'mx_postback_key_trial_0123456789';
-const SALT = 'mx_link_salt_trial_9876543210';
+const SECRET = trialSecret('whsec_');
+const ADMIN = trialSecret('admin_');
+const KEY = trialSecret('postback_');
+const SALT = trialSecret('salt_');
 const APP_ID = '7731';
 const HOLD = 2;
 const giftly = createGiftly();

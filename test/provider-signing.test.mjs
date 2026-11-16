@@ -3,7 +3,7 @@
 // output and against the test vectors published in Paddle's official SDK test suites.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { generateKeyPairSync, sign } from 'node:crypto';
+import { generateKeyPairSync, randomBytes, sign } from 'node:crypto';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -32,7 +32,7 @@ function runHelper(args, env) {
   return spawnSync(process.execPath, [helperPath, ...args], { encoding: 'utf8', env: { ...process.env, ...env } });
 }
 
-const SECRET = 'whsec_test_not_a_real_secret';
+const SECRET = `whsec_${randomBytes(18).toString('hex')}`;
 
 test('Paddle: the helper and the reference reproduce the vectors of the official SDK tests', async () => {
   // paddle-node-sdk, src/__tests__/notifications/webhooks-validator.node.test.ts
