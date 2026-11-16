@@ -1,0 +1,2 @@
+journal_mode delete: connection A: recorded | connection B: PDOException: SQLSTATE[HY000]: General error: 5 database is locked | balance {"pending":0,"available":0,"total":0,"uncollected":0}
+journal_mode wal: connection A: PDOException: SQLSTATE[HY000]: General error: 5 database is locked | connection B: recorded | balance {"pending":0,"available":0,"total":0,"uncollected":0}

@@ -1,0 +1,32 @@
+TAP version 13
+# Subtest: payouts sent at the same moment cannot all pass the balance check when the store has no withLock
+not ok 1 - payouts sent at the same moment cannot all pass the balance check when the store has no withLock
+  ---
+  duration_ms: 3.704045
+  type: 'test'
+  location: '<project>/test/store-without-lock.test.js:15:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    one payout of 500 fits a balance of 500
+    
+    3 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 3
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file://<project>/test/store-without-lock.test.js:26:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 85.653548

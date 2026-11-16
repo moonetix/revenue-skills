@@ -1,0 +1,14 @@
+1. A reversal that arrives before its earning stores nothing, and the late earning accrues in full
+   reverseEarning e9: {"status":"none","reason":"unknown_earning","clawbacks":[]}
+   recordEarning e9:  "accrued"
+   balance of a:      {"pending":0,"available":500,"total":500,"uncollected":0}
+2. Two attach calls at the same moment (a refers b, b refers a) on MemoryStore, which locks per referee
+   results: attached, attached
+3. A partial reversal without reversalId, then the full reversal without reversalId (documented pitfall)
+   partial 2000: "reversed"
+   full:         "duplicate"
+   balance of a: {"pending":0,"available":300,"total":300,"uncollected":0}
+4. A payout whose at lies after the hold releases held commission (the engine has no clock of its own)
+   payout at 2000: "recorded"
+5. Concurrent earnings pass a per-referee cap of 100 when the store has no withLock (same root as MA-02)
+   balance of a: {"pending":0,"available":300,"total":300,"uncollected":0}
