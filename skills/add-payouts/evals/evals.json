@@ -1,24 +1,11 @@
 {
-  "skill": "add-payouts",
-  "triggers": {
-    "should": [
-      "Users of our rewards app should be able to cash out their coins to PayPal. Add a withdrawal flow with a 5 dollar minimum.",
-      "Someone clicked Withdraw a few times fast and got paid three times for one balance. Fix our payout endpoint.",
-      "Our payout call to the gift card provider sometimes times out. We refund the user, and then the card arrives anyway. How should this work?",
-      "Add a 14 day hold before earnings can be withdrawn, and make sure promo bonus coins can never be cashed out.",
-      "Sellers on our marketplace need weekly payouts of their sales balance, with an approval step for large amounts and a daily check against the provider's records."
-    ],
-    "should_not": [
-      "A customer got a refund from the payment provider but kept the credits. Make refunds take the credits back.",
-      "Add a ledger table so that every change to a user's balance is recorded and a repeated event cannot credit twice.",
-      "Give the referrer a bonus when the friend they invited makes a first purchase."
-    ]
-  },
-  "tasks": [
+  "skill_name": "add-payouts",
+  "evals": [
     {
-      "id": "withdrawal-with-idempotent-provider-call",
+      "id": 1,
       "prompt": "This Express app on PostgreSQL has a ledger and a postEntry function. Add POST /api/payouts so users can withdraw earned coins as gift cards through our provider client in lib/giftcards.js. Minimum 500 coins, at most 5000 coins per day.",
-      "checks": [
+      "expected_output": "POST /api/payouts that reserves the coins and creates the payout in one transaction, enforces the 500 coin minimum and the 5000 coin daily cap, and calls lib/giftcards.js with the payout id as the idempotency key, with tests.",
+      "assertions": [
         "The handler posts the debit through the existing posting function and inserts the payout row in one transaction that commits before the provider client is called.",
         "The provider client is called with the payout id as its idempotency key, and no code path creates a second key for the same payout row.",
         "A timeout or thrown error from the provider client leaves the payout in a non-final status and posts no refund entry.",
@@ -30,9 +17,10 @@
       ]
     },
     {
-      "id": "resolve-unknown-payouts",
+      "id": 2,
       "prompt": "Our Django app marks a payout as failed and returns the money whenever the provider request raises an exception. Last week 12 users were paid and refunded. Fix the flow so that cannot happen, and add whatever is needed to settle payouts whose result we do not know.",
-      "checks": [
+      "expected_output": "A payout flow where a provider error or timeout leaves the payout in an unknown status instead of refunding it, and a scheduled resolver that asks the provider and settles each payout once.",
+      "assertions": [
         "An exception or timeout from the provider call no longer leads to a refund: the payout stays in a status that means the result is unknown.",
         "A scheduled command or task looks up payouts in that status at the provider by the app's own payout id or the stored provider reference, and applies paid or failed from the answer.",
         "The command never creates a new transfer with a new idempotency key for an existing payout.",
@@ -43,9 +31,10 @@
       ]
     },
     {
-      "id": "hold-withdrawable-and-destination-cooldown",
+      "id": 3,
       "prompt": "In this Laravel app on MySQL users earn points from offers, get bonus points from promo codes and can withdraw to a PayPal address. Make only earned points withdrawable after a 14 day hold, add a 48 hour wait after the PayPal address is changed, and send first payouts to a review queue for our support staff.",
-      "checks": [
+      "expected_output": "A withdrawable amount computed on the server from earned points older than 14 days, a 48 hour block after the PayPal address changes, and first payouts routed to a review queue for staff, each with tests.",
+      "assertions": [
         "The withdrawable amount is computed on the server from dated ledger entries of an explicit list of earned kinds, and promo entries are not on that list.",
         "A test credits an offer and requests a payout at once, and the request is refused; after the test clock moves past 14 days the same request succeeds.",
         "A test shows that an account holding only promo points cannot withdraw any of them.",

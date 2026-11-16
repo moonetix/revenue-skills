@@ -1,26 +1,11 @@
 {
-  "skill": "build-webhook-endpoint",
-  "triggers": {
-    "should": [
-      "Add a webhook endpoint for our payment provider. It should mark the order paid and add the credits when the payment succeeds.",
-      "Our webhook handler verifies JSON.stringify(req.body) and the signature check fails on real events, so someone commented it out. Fix it properly.",
-      "The offerwall sends a postback with a hash parameter when a user finishes an offer. Build the postback URL so nobody can fake a reward.",
-      "The provider retried a webhook after a timeout and the customer got their coins twice. Make the handler safe against retries.",
-      "We need to rotate the webhook signing secret without dropping events. How should the endpoint handle the old and the new one?",
-      "Set up the server notification endpoint for in-app purchases so a subscription renewal extends access exactly once."
-    ],
-    "should_not": [
-      "Customers who get a refund keep their credits. Make refunds take the credits back.",
-      "Send a webhook to our customers' servers whenever one of their invoices is paid, with retries and a signature they can verify.",
-      "Add a credits balance with a transaction history to our app.",
-      "Audit our payment code and tell me where we can lose money."
-    ]
-  },
-  "tasks": [
+  "skill_name": "build-webhook-endpoint",
+  "evals": [
     {
-      "id": "signed-payment-webhook-express-postgres",
+      "id": 1,
       "prompt": "This Express app on PostgreSQL creates orders with a price and a number of credits, and already has a ledger posting function. Add POST /webhooks/payments for a provider that signs each event with an X-Signature header of the form t=<unix seconds>,v1=<hex HMAC-SHA256 of t.body>. A payment.succeeded event should credit the order.",
-      "checks": [
+      "expected_output": "POST /webhooks/payments that verifies the signature over the raw body with a timestamp tolerance and a constant-time comparison, stores each event id once, and credits the order exactly once, with tests.",
+      "assertions": [
         "The webhook route receives the raw request body as bytes and is registered before or apart from the global JSON body parser.",
         "The HMAC is computed over the timestamp and the raw body, and the comparison uses crypto.timingSafeEqual or an equivalent constant-time function.",
         "A request whose timestamp is more than the configured tolerance away from the server time is answered with a 4xx status.",
@@ -33,9 +18,10 @@
       ]
     },
     {
-      "id": "hash-signed-postback-php-mysql",
+      "id": 2,
       "prompt": "Our PHP app on MySQL has postback.php, which credits users.balance from $_GET['reward'] for $_GET['user_id'] with no checks. The network's documentation says hash = HMAC-SHA256 of user_id:tx:reward:status with our postback key, status 1 is a completed offer and status 2 is a reversal. Make it safe. We do not have a ledger.",
-      "checks": [
+      "expected_output": "A postback.php that verifies the HMAC over the received strings, credits each transaction once under a unique key, handles status 2 as a reversal of the stored credit, and works without a ledger, with tests.",
+      "assertions": [
         "The hash is recomputed from the received user_id, tx, reward and status strings before any conversion and compared with hash_equals.",
         "The postback key comes from configuration with no default, and a missing key stops the request before anything is credited.",
         "No request parameter or debug switch lets a request skip the hash check.",
@@ -47,9 +33,10 @@
       ]
     },
     {
-      "id": "repair-skippable-verification-flask",
+      "id": 3,
       "prompt": "In this Flask app the webhook view only checks the signature when the X-Signature header is present, falls back to the secret 'changeme' when WEBHOOK_SECRET is unset, compares with ==, and the /payment/success page marks the order paid. Fix all of it without changing what a genuine event does.",
-      "checks": [
+      "expected_output": "A webhook view that always verifies, refuses to start without WEBHOOK_SECRET, compares in constant time, and a /payment/success page that only shows status, while a genuine event still credits as before.",
+      "assertions": [
         "The view refuses every request without a valid signature, including requests with no signature header.",
         "The signature is verified over request.get_data() or request.data, not over a re-serialized request.json.",
         "No default value for the secret remains in the code, and the app raises at start-up when the variable is unset.",

@@ -97,27 +97,39 @@ export function validateSkill(dir) {
     }
   }
 
-  const evalsFile = path.join(dir, 'evals', 'evals.json');
-  if (!existsSync(evalsFile)) fail('evals/evals.json is missing');
-  else {
-    let evals;
-    try {
-      evals = JSON.parse(readFileSync(evalsFile, 'utf8'));
-    } catch (err) {
-      fail(`evals/evals.json is not valid JSON: ${err.message}`);
+  // The two files follow https://agentskills.io/skill-creation/evaluating-skills (evals.json)
+  // and https://agentskills.io/skill-creation/optimizing-descriptions (eval_queries.json).
+  const readJson = (rel) => {
+    const file = path.join(dir, rel);
+    if (!existsSync(file)) {
+      fail(`${rel} is missing`);
+      return null;
     }
-    if (evals) {
-      const strings = (list, min) => Array.isArray(list) && list.length >= min && list.every((s) => typeof s === 'string' && s.length > 10);
-      if (evals.skill !== name) fail('evals.json "skill" must equal the folder name');
-      if (!strings(evals.triggers?.should, 5)) fail('evals.json needs at least five triggers.should messages');
-      if (!strings(evals.triggers?.should_not, 3)) fail('evals.json needs at least three triggers.should_not messages');
-      const tasks = Array.isArray(evals.tasks) ? evals.tasks : [];
-      if (tasks.length < 3) fail('evals.json needs at least three tasks');
-      for (const task of tasks) {
-        if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(task.id ?? '') || typeof task.prompt !== 'string' || !strings(task.checks, 2)) {
-          fail(`evals.json task "${task.id}" needs a kebab-case id, a prompt and at least two checks`);
-        }
-      }
+    try {
+      return JSON.parse(readFileSync(file, 'utf8'));
+    } catch (err) {
+      fail(`${rel} is not valid JSON: ${err.message}`);
+      return null;
+    }
+  };
+  const filled = (value, min = 11) => typeof value === 'string' && value.length >= min;
+  const evals = readJson('evals/evals.json');
+  if (evals) {
+    if (evals.skill_name !== name) fail('evals.json "skill_name" must equal the folder name');
+    const cases = Array.isArray(evals.evals) ? evals.evals : [];
+    if (cases.length < 3) fail('evals.json needs at least three evals');
+    cases.forEach((item, i) => {
+      const ok = item.id === i + 1 && filled(item.prompt) && filled(item.expected_output) && Array.isArray(item.assertions) && item.assertions.length >= 2 && item.assertions.every((a) => filled(a));
+      if (!ok) fail(`evals.json eval ${i + 1} needs id ${i + 1}, a prompt, an expected_output and at least two assertions`);
+    });
+  }
+  const queries = readJson('evals/eval_queries.json');
+  if (queries) {
+    const valid = Array.isArray(queries) && queries.every((q) => filled(q.query) && typeof q.should_trigger === 'boolean');
+    if (!valid) fail('eval_queries.json must be a list of { "query", "should_trigger" }');
+    else {
+      if (queries.filter((q) => q.should_trigger).length < 5) fail('eval_queries.json needs at least five queries that should trigger');
+      if (queries.filter((q) => !q.should_trigger).length < 3) fail('eval_queries.json needs at least three queries that should not trigger');
     }
   }
   return errors;
@@ -133,7 +145,7 @@ export function validateAll() {
     if (!readme.includes(`skills/${name}/`)) errors.push(`README.md does not link skills/${name}/`);
   }
   const version = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8')).version;
-  for (const manifest of ['.claude-plugin/plugin.json', '.codex-plugin/plugin.json']) {
+  for (const manifest of ['plugin.json', '.claude-plugin/plugin.json', '.codex-plugin/plugin.json', 'gemini-extension.json']) {
     const file = path.join(root, manifest);
     if (!existsSync(file)) errors.push(`${manifest} is missing`);
     else if (JSON.parse(readFileSync(file, 'utf8')).version !== version) errors.push(`${manifest} version must equal package.json (${version})`);

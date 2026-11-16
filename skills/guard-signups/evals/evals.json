@@ -1,24 +1,11 @@
 {
-  "skill": "guard-signups",
-  "triggers": {
-    "should": [
-      "People are farming our 500 coin sign-up bonus with Gmail dot and plus variants of the same address. Stop it.",
-      "Add fake account protection to registration: disposable emails, VPS and Tor IPs, and rate limits per IP.",
-      "Our 14 day free trial gets restarted by users who delete their account and sign up again. Fix that.",
-      "Make promo codes redeemable once per account and enforce the total redemption cap properly.",
-      "One person made 40 accounts to collect our referral reward. What should the sign-up flow check, and can you build it?"
-    ],
-    "should_not": [
-      "Audit our payment webhooks and wallet code for ways users could get free credits.",
-      "Users can withdraw the same balance twice if they click the cash-out button fast enough.",
-      "Add Google and GitHub login to the sign-up page."
-    ]
-  },
-  "tasks": [
+  "skill_name": "guard-signups",
+  "evals": [
     {
-      "id": "normalized-email-key",
+      "id": 1,
       "prompt": "This Express and PostgreSQL app gives 100 credits on sign-up. Users are collecting it repeatedly with jane.doe@gmail.com, janedoe+1@gmail.com and similar. Fix sign-up so one inbox means one account, without breaking existing users.",
-      "checks": [
+      "expected_output": "A normalized email column with a unique index, written at sign-up in the same statement, backfilled for existing users without merging or locking them out, with tests for dots and plus tags.",
+      "assertions": [
         "The users table has a normalized email column with a unique index, and the sign-up handler writes it in the same statement as the typed address.",
         "A test shows that jane.doe@gmail.com, janedoe+1@gmail.com and J.A.N.E.Doe@googlemail.com produce the same key.",
         "A test shows that a plus tag at outlook.com and a dot at a custom domain are left in place.",
@@ -28,9 +15,10 @@
       ]
     },
     {
-      "id": "explainable-score-with-review",
+      "id": 2,
       "prompt": "Add risk screening to our Django sign-up view. We give a welcome bonus. I want disposable emails refused, datacenter and Tor addresses and rapid repeat sign-ups handled sensibly, and I do not want to lock out students who share a campus network.",
-      "checks": [
+      "expected_output": "A sign-up screen that stores a score, a decision of allow, review or block and its reasons, refuses disposable emails, sends datacenter and Tor addresses and fast repeats to review, and does not block a shared campus network by address alone.",
+      "assertions": [
         "Each sign-up attempt stores a row with a numeric score, one of the decisions allow, review or block, and a list of reasons that each carry a code and points.",
         "A test asserts that the stored score equals the sum of the stored reasons' points.",
         "A sign-up from an address in a fixture datacenter range creates the account and leaves the bonus in a held state with a zero balance.",
@@ -41,9 +29,10 @@
       ]
     },
     {
-      "id": "promo-once-with-atomic-cap",
+      "id": 3,
       "prompt": "Our Laravel app has a promo code endpoint. The same account can redeem SPRING250 over and over, and the 500 redemption cap is checked with a count query. Make it correct, and show me it holds under concurrent requests.",
-      "checks": [
+      "expected_output": "A redemption table with a unique key on code and user, a cap enforced by one conditional update, and a concurrency test or probe run that shows no more than one redemption per user and no more than 500 in total.",
+      "assertions": [
         "A redemptions table has a unique or primary key on the pair of code and user.",
         "The cap is enforced by a conditional UPDATE on a counter column (or an equivalent single atomic statement), not by a COUNT query followed by an insert.",
         "The redemption insert, the cap update and the credit run inside one database transaction.",

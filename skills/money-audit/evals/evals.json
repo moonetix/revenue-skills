@@ -1,49 +1,37 @@
 {
-  "skill": "money-audit",
-  "triggers": {
-    "should": [
-      "Audit this repo for ways users could get free credits before we launch next week.",
-      "Can someone replay our Stripe webhook and get the order credited twice?",
-      "We lost about $400 in gift card payouts last month and I can't tell how. Can you find the hole?",
-      "Review the postback handler and the withdraw endpoint, I want to know if they can be cheated.",
-      "Is my points system safe? People can earn, spend, transfer and cash out.",
-      "I just added a promo code endpoint, check that it can't be farmed."
-    ],
-    "should_not": [
-      "Add a pricing page with three tiers and a monthly/yearly toggle.",
-      "Run a general security scan for XSS and missing headers on the marketing site.",
-      "Our Stripe checkout button does nothing when clicked, can you debug the frontend?",
-      "Write unit tests for the date formatting helpers."
-    ]
-  },
-  "tasks": [
+  "skill_name": "money-audit",
+  "evals": [
     {
-      "id": "full-audit-of-the-practice-app",
-      "prompt": "Run a full money audit of the app in playground/vulnerable and write the report.",
-      "checks": [
-        "money-audit/money-map.md, money-audit/findings.json and money-audit/REPORT.md exist in the audited project.",
-        "scripts/validate-findings.mjs prints VALID for the findings file with the audited project as --root.",
-        "node playground/score.mjs on the findings file reports at least 14 of the 17 planted bugs as found.",
-        "No file of the audited app was modified.",
-        "No app process is left running when the audit ends."
+      "id": 1,
+      "prompt": "Run a full money audit of this project and write the report.",
+      "expected_output": "money-audit/money-map.md, money-audit/findings.json and money-audit/REPORT.md in the project, a findings file the bundled validator accepts, and a summary that lists the findings by money at risk and names the classes that are clear.",
+      "assertions": [
+        "money-audit/money-map.md lists every route, job and admin tool that credits, debits or pays out, each with its file and line.",
+        "scripts/validate-findings.mjs prints VALID for money-audit/findings.json with the project directory as --root.",
+        "Every finding with a probe proof names a request file or command that can be run again without a literal token or key.",
+        "No file of the audited project outside money-audit/ was modified.",
+        "No app process started for the audit is left running when it ends."
       ]
     },
     {
-      "id": "focused-check-of-one-handler",
-      "prompt": "Look only at playground/vulnerable/routes/postback.mjs. Can a postback be forged or replayed?",
-      "checks": [
-        "The answer names the debug=1 bypass of the hash check with its file and line.",
-        "The answer names the check-then-insert duplicate window and the reversal that is not tied to its credit.",
+      "id": 2,
+      "prompt": "Look only at our payment webhook handler. Can an event be forged, or credit an order twice?",
+      "expected_output": "A short answer about that one handler: whether the signature is checked on every request, whether processed events are remembered under a unique key, each point with file and line.",
+      "assertions": [
+        "The answer quotes the line where the signature is verified, or states that no verification exists, with file and line.",
+        "The answer says what stops a second delivery of the same event, naming the unique key or the state check, or that nothing does.",
         "No money-audit folder or other file is created, because this is a focused check."
       ]
     },
     {
-      "id": "clean-code-yields-no-findings",
-      "prompt": "Run a full money audit of the app in playground/fixed.",
-      "checks": [
-        "scripts/validate-findings.mjs prints VALID for the findings file.",
-        "No finding is rated critical or high.",
-        "Each class recorded as clear names the guard that makes it safe, such as the unique (kind, ref) ledger key or the conditional debit."
+      "id": 3,
+      "prompt": "This repository is a ledger library with no server. Audit it for ways a balance could be overdrawn or a payout made twice.",
+      "expected_output": "A full audit in money-audit/ whose money map lists the public functions that move value, whose proofs are failing tests or small scripts rather than probes, and whose environment field says what could not be run.",
+      "assertions": [
+        "Each row of money-audit/money-map.md is a public function of the library, and the caller column says what the library expects from the integrating app.",
+        "No finding has a probe proof; each is a test, a script under money-audit/evidence/ or a code trace.",
+        "The environment field names the runtime and stores the proofs ran on and what could not be run.",
+        "A caller duty that the README documents and the shipped stores meet is recorded as a note, not a finding."
       ]
     }
   ]

@@ -1,26 +1,11 @@
 {
-  "skill": "handle-refunds-and-reversals",
-  "triggers": {
-    "should": [
-      "Customers who get a refund keep the credits they bought. Make refunds take the credits back.",
-      "We just got our first chargeback and the user still has the coins. What should happen when a dispute is opened, and when we win or lose it?",
-      "The offerwall sends status=2 when an advertiser takes a conversion back. Right now we ignore it. Handle it, including when the user already spent the reward.",
-      "A user bought a pack, spent everything, then got a refund from the store. Their balance should go negative and they should not be able to cash out. Build that.",
-      "When a referred user's purchase is refunded, the referrer keeps the commission. Claw it back too.",
-      "Support sometimes refunds part of an order. Take back the matching share of the credits, and make sure a refund webhook that arrives twice does not take it twice."
-    ],
-    "should_not": [
-      "Verify the signature on our payment provider's webhook before we credit the order.",
-      "Add a withdrawal feature so users can cash out their earnings to gift cards.",
-      "Write our refund policy page and the email we send when a refund is approved.",
-      "Our provider retried a payment webhook and the user was credited twice. Make the credit idempotent."
-    ]
-  },
-  "tasks": [
+  "skill_name": "handle-refunds-and-reversals",
+  "evals": [
     {
-      "id": "refund-webhook-with-partial-and-debt",
+      "id": 1,
       "prompt": "This Express app on PostgreSQL credits an order's credits to a ledger when payment.succeeded arrives. payment.refunded events carry refund_id, order_id, amount_cents and currency and are currently answered with 200 and ignored. Make refunds, including partial ones, take the credits back. Users may already have spent them.",
-      "checks": [
+      "expected_output": "Refund handling that takes back the credits for each refund id once, in proportion for a partial refund, lets the balance go negative when the credits were spent, and blocks spending while it is, with tests.",
+      "assertions": [
         "A migration creates a refunds table with a unique constraint on the provider and refund id.",
         "The amount subtracted is computed from the ledger entry of the original purchase and the order's price, not taken from a credits or amount field of the event.",
         "The reversal entry references the original ledger entry and is posted to the account of that entry.",
@@ -33,9 +18,10 @@
       ]
     },
     {
-      "id": "postback-reversal-php-mysql",
+      "id": 2,
       "prompt": "Our PHP app on MySQL credits offer rewards from a signed postback into a ledger with kind 'offer' and the network's transaction id as reference. The network sends the same postback with status=2 when a conversion is reversed, sometimes before the status=1 postback. Add reversal handling. Referrers get 10 percent of each reward as kind 'referral_commission'.",
-      "checks": [
+      "expected_output": "Reversal handling that subtracts the stored credit once, also reverses the referral commission, and records a reversal that arrives first so that the later credit pays nothing, with tests.",
+      "assertions": [
         "The reversal looks up the ledger entry or stored conversion for the transaction id and subtracts that entry's amount from that entry's account, ignoring the reward and user id parameters of the reversal request.",
         "A second status=2 postback for the same transaction id does not change any balance and is answered with the network's success response.",
         "A status=2 postback for a transaction id that was never credited changes no balance, and a status=1 postback for the same id that arrives afterwards credits nothing.",
@@ -46,9 +32,10 @@
       ]
     },
     {
-      "id": "dispute-life-cycle-with-entitlement",
+      "id": 3,
       "prompt": "Our Django app on PostgreSQL sells a lifetime Pro plan and credit packs. We receive dispute.opened, dispute.won and dispute.lost events with a dispute id and the order id and do nothing with them. Implement them. A partial refund may already exist on the order.",
-      "checks": [
+      "expected_output": "Dispute handling with a status that moves from open to won or lost once, credits and the Pro entitlement taken back on a loss net of any partial refund, and restored on a win, with tests.",
+      "assertions": [
         "A disputes table has a unique constraint on the provider and dispute id, and a status that only moves from open to won or lost through a conditional update.",
         "dispute.opened delivered twice takes the remaining credits of the order once and revokes or suspends the Pro plan granted by that order.",
         "dispute.won gives back the amount that the opening took, read from the stored dispute, and restores the plan. A second dispute.won changes nothing.",

@@ -1,0 +1,37 @@
+{
+  "skill_name": "money-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Run a full money audit of the app in ./coinjar and write the report.",
+      "expected_output": "money-audit/money-map.md, money-audit/findings.json and money-audit/REPORT.md inside ./coinjar, a findings file the validator accepts, and most of the planted bugs found.",
+      "assertions": [
+        "money-audit/money-map.md, money-audit/findings.json and money-audit/REPORT.md exist in the audited copy.",
+        "scripts/validate-findings.mjs prints VALID for the findings file with the audited copy as --root.",
+        "node playground/score.mjs on the findings file reports at least 14 of the 17 planted bugs as found.",
+        "No file of the audited copy outside money-audit/ was modified.",
+        "No app process is left running when the audit ends."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Look only at routes/postback.mjs in ./coinjar. Can a postback be forged or replayed?",
+      "expected_output": "A short answer about that one file, with file and line for each way a postback can be forged, replayed or reversed twice.",
+      "assertions": [
+        "The answer names the debug=1 bypass of the hash check with its file and line.",
+        "The answer names the check-then-insert duplicate window and the reversal that is not tied to its credit.",
+        "No money-audit folder or other file is created, because this is a focused check."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Run a full money audit of the app in ./coinjar-fixed.",
+      "expected_output": "A valid report with no critical or high findings, and a guard named for every class recorded as clear.",
+      "assertions": [
+        "scripts/validate-findings.mjs prints VALID for the findings file.",
+        "No finding is rated critical or high.",
+        "Each class recorded as clear names the guard that makes it safe, such as the unique (kind, ref) ledger key or the conditional debit."
+      ]
+    }
+  ]
+}

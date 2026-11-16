@@ -1,0 +1,12 @@
+[
+  {"query": "Add a webhook endpoint for our payment provider. It should mark the order paid and add the credits when the payment succeeds.", "should_trigger": true},
+  {"query": "Our webhook handler verifies JSON.stringify(req.body) and the signature check fails on real events, so someone commented it out. Fix it properly.", "should_trigger": true},
+  {"query": "The offerwall sends a postback with a hash parameter when a user finishes an offer. Build the postback URL so nobody can fake a reward.", "should_trigger": true},
+  {"query": "The provider retried a webhook after a timeout and the customer got their coins twice. Make the handler safe against retries.", "should_trigger": true},
+  {"query": "We need to rotate the webhook signing secret without dropping events. How should the endpoint handle the old and the new one?", "should_trigger": true},
+  {"query": "Set up the server notification endpoint for in-app purchases so a subscription renewal extends access exactly once.", "should_trigger": true},
+  {"query": "Customers who get a refund keep their credits. Make refunds take the credits back.", "should_trigger": false},
+  {"query": "Send a webhook to our customers' servers whenever one of their invoices is paid, with retries and a signature they can verify.", "should_trigger": false},
+  {"query": "Add a credits balance with a transaction history to our app.", "should_trigger": false},
+  {"query": "Audit our payment code and tell me where we can lose money.", "should_trigger": false}
+]

@@ -50,7 +50,9 @@ The fixed version refuses to start without its secrets. That is one of the fixes
 node playground/score.mjs path/to/copy/money-audit/findings.json
 ```
 
-The scorer reports which of the 17 planted bugs were found, which were missed, and which findings match nothing in the key. Read that last group: an audit can find real weaknesses the key does not list.
+The scorer pairs findings with planted bugs one to one: a finding counts when its class matches and its location, or a step of its trace, falls on the bug's code, and each finding counts for one bug at most. It prints how many planted bugs were found, which were missed, how many findings point at a planted bug, and which point at none. Read that last group: an audit can find real weaknesses the key does not list.
+
+[`evals.json`](evals.json) describes these runs as eval cases in the [Agent Skills format](https://agentskills.io/skill-creation/evaluating-skills): the prompts, the expected output and the assertions to grade. `./coinjar` is the copy of `vulnerable/` and `./coinjar-fixed` a copy of `fixed/`. Nothing in this repository runs them; they are kept here, and not in the skill, because they name the planted bugs.
 
 ## Proof that the key is real
 
