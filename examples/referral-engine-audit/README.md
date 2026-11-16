@@ -2,7 +2,7 @@
 
 This folder is the output of one `money-audit` run on [referral-engine](https://github.com/moonetix/referral-engine), a referral and commission library for JavaScript and PHP published by the same maintainer. It was not written for this repository and has no planted bugs.
 
-The agent audited commit `174a132`. Its library code is identical to tag `v1.0.0`; the commits between the tag and it change only the CI configuration and one README sentence. It is a library with no server, so there was nothing to probe: the proofs are failing tests in the library's own test runner, small PHP scripts, and one code trace.
+The run used Claude Fable 5.2 in Claude Code on 2026-11-14, with the `money-audit` skill as it was before 1.0.0. The agent audited commit `174a132`. Its library code is identical to tag `v1.0.0`; the commits between the tag and it change only the CI configuration and one README sentence. It is a library with no server, so there was nothing to probe: the proofs are failing tests in the library's own test runner, small PHP scripts, and one code trace.
 
 ## What it found
 

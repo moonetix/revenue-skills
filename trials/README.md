@@ -6,7 +6,7 @@ Use the trials to measure your own agent and model, or to check that a change to
 
 ## Results
 
-Measured on 2026-11-16 with Claude Opus 5.5 running as a Claude Code agent: one non-interactive session per skill, one run per skill (two for `add-payouts`). Every checker ran three times on what the agent built, and each gave the same result all three times.
+Measured on 2026-11-16 with Claude Opus 5.5 running as a Claude Code agent: one non-interactive session per skill, one run per skill (two for `add-payouts`). Every checker ran three times on what the agent built, and each gave the same result all three times. The skill text was the one released in 1.2.0, except for two sentences added after their runs: the Stripe `livemode` deploy note in `build-webhook-endpoint` and the secret sentence in step 9 of `guard-signups`. `add-payouts` ran once before its fix and once with it.
 
 | Skill | Checks | First-run result | Notes |
 | --- | --- | --- | --- |

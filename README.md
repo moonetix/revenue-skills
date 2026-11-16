@@ -104,6 +104,8 @@ The [installer's agent list](https://github.com/vercel-labs/skills/blob/main/doc
 
 Each result was the same in three checker runs. This is one agent and one model, with one run per skill (two for `add-payouts`). The checks cover what can be seen from outside the app; each trial's `RUBRIC.md` lists the rules left to code review. The starter apps were written for this repository. [`trials/`](trials/) has the tasks, the checkers and how to run them with your own agent.
 
+The trials ran on the skill text released in 1.2.0, except for two sentences added after their runs: the Stripe `livemode` deploy note in `build-webhook-endpoint` and the secret sentence in step 9 of `guard-signups`. `add-payouts` ran once before its fix and once with it.
+
 **The audit, on two codebases.** `money-audit` is measured separately, with one run on each:
 
 | Target | Result |
@@ -111,7 +113,7 @@ Each result was the same in three checker runs. This is one agent and one model,
 | [`playground/vulnerable/`](playground/vulnerable/), the practice app | With Claude Code: all 17 planted bugs found, each matched to a different finding. 24 findings, all accepted by the validator: 20 proved with requests from the probe, 4 with code traces. 23 point at a planted bug; the other one was a real weakness the key does not list. The report is in [`examples/coinjar-audit/`](examples/coinjar-audit/). |
 | [referral-engine](https://github.com/moonetix/referral-engine) v1.0.0, a published library | Three ways for a payout to exceed the balance, one high and two medium. All three were fixed in referral-engine 1.0.1 through [pull request #1](https://github.com/moonetix/referral-engine/pull/1). The run is in [`examples/referral-engine-audit/`](examples/referral-engine-audit/). |
 
-The practice app was written for this repository and the skill references alongside it. In the practice app run, one probe example in `unverified-events.md` still showed a `debug=1` bypass that matches one of the planted bugs (1.1.0 removed it). Read it as an end to end check, not as a benchmark on unfamiliar code. referral-engine is a library by the same maintainer: one library, one run. `npm run check:example` validates and scores the first audit, and shows the tests the agent wrote for referral-engine failing on 1.0.0 and passing on 1.0.1. Results vary with the agent and the model.
+Both audits ran with Claude Fable 5.2 in Claude Code, on the `money-audit` skill as it was before 1.0.0 (2026-11-13 and 2026-11-14). Two parts of the 1.1.0 guidance came out of these runs: how to audit a library instead of a running app, and a payout checked against an as-of balance, which is the shape of the first referral-engine finding. The practice app was written for this repository and the skill references alongside it. In the practice app run, one probe example in `unverified-events.md` still showed a `debug=1` bypass that matches one of the planted bugs (1.1.0 removed it). Read it as an end to end check, not as a benchmark on unfamiliar code. referral-engine is a library by the same maintainer: one library, one run. `npm run check:example` validates and scores the first audit, and shows the tests the agent wrote for referral-engine failing on 1.0.0 and passing on 1.0.1. Results vary with the agent and the model.
 
 ## The skills
 

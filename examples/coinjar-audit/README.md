@@ -2,6 +2,8 @@
 
 Spoilers for the practice app. Run your own audit first if you want to measure an agent with it.
 
+The run used Claude Fable 5.2 in Claude Code on 2026-11-13, with the `money-audit` skill as it was before 1.0.0.
+
 This folder is the output of one `money-audit` run on a copy of [`playground/vulnerable/`](../../playground/vulnerable/), kept as the agent wrote it:
 
 | File | What it is |
