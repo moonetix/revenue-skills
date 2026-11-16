@@ -8,5 +8,27 @@
   "homepage": "https://github.com/moonetix/revenue-skills",
   "repository": "https://github.com/moonetix/revenue-skills",
   "license": "MIT",
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Revenue Skills",
+    "shortDescription": "Find and fix money bugs",
+    "longDescription": "A money-path audit that quotes the code and attaches a proof to every finding, and skills that build ledgers, webhook endpoints, usage credits, refunds and reversals, payouts, referral programs, sign-up guards, offerwalls and reward economies correctly. For developers of apps that charge, credit or pay out. The proof script talks only to an app on your own machine unless you name another host. Results vary with the agent and the model.",
+    "developerName": "Moonetix",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/moonetix/revenue-skills",
+    "supportURL": "https://github.com/moonetix/revenue-skills/issues",
+    "defaultPrompt": [
+      "Audit this project for ways users could get free credits or be paid twice.",
+      "Add the Stripe webhook that credits paid orders exactly once, then make refunds take the credits back.",
+      "Add cash-outs that can never pay twice, with a minimum, daily limits and a hold on new earnings."
+    ],
+    "brandColor": "#0e7a48",
+    "brandColorDark": "#7df2a8",
+    "composerIcon": "./assets/icon.svg",
+    "logo": "./assets/icon.svg"
+  }
 }

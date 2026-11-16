@@ -39,6 +39,24 @@ jobs:
       - name: Every trial checker passes its reference solution and catches its naive one as documented
         run: npm run trials:validate
 
+  plugin-scanner:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: HOL Plugin Scanner
+        uses: hashgraph-online/ai-plugin-scanner-action@caba2e96aa8ad2feb6cf6fca52442b52e22e779f # v1.2.635
+        with:
+          plugin_dir: "."
+          mode: scan
+          min_score: 75
+          fail_on_severity: none
+          format: sarif
+          upload_sarif: true
+
   scripts-on-node-20:
     runs-on: ubuntu-latest
     timeout-minutes: 10

@@ -85,6 +85,7 @@ test('public text follows the house style', () => {
     'examples/coinjar-audit/README.md',
     'examples/referral-engine-audit/README.md',
     'site/index.html',
+    'docs/social-preview.html',
     'trials/README.md',
   ];
   for (const file of files) {
@@ -115,9 +116,81 @@ test('plugin manifests use only the fields their formats define', () => {
   assert.match(portable.name, /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/);
   const marketplace = JSON.parse(read('.claude-plugin/marketplace.json'));
   for (const key of Object.keys(marketplace.metadata)) assert.ok(['description', 'version', 'pluginRoot'].includes(key), `marketplace metadata: ${key}`);
-  assert.equal(JSON.parse(read('.claude-plugin/plugin.json')).skills, undefined, 'skills/ is scanned by default');
+  // Claude Code: https://code.claude.com/docs/en/plugins-reference (fields table).
+  const claude = JSON.parse(read('.claude-plugin/plugin.json'));
+  const claudeFields = ['name', 'displayName', 'version', 'description', 'author', 'homepage', 'repository', 'license', 'keywords'];
+  for (const key of Object.keys(claude)) assert.ok(claudeFields.includes(key), `.claude-plugin/plugin.json: ${key}`);
+  assert.equal(claude.skills, undefined, 'skills/ is scanned by default');
+  assert.equal(claude.name, portable.name);
+  assert.equal(claude.displayName, 'Revenue Skills');
+  for (const plugin of marketplace.plugins) assert.equal(plugin.source, './', 'the plugin branch reuses this marketplace file');
+  // Codex: https://developers.openai.com/plugins/deploy/submission (listing metadata, Codex format).
+  const codex = JSON.parse(read('.codex-plugin/plugin.json'));
+  const codexFields = ['name', 'version', 'description', 'author', 'homepage', 'repository', 'license', 'keywords', 'skills', 'interface'];
+  for (const key of Object.keys(codex)) assert.ok(codexFields.includes(key), `.codex-plugin/plugin.json: ${key}`);
+  assert.equal(codex.name, portable.name);
+  assert.equal(codex.skills, './skills/');
+  const ui = codex.interface;
+  const uiFields = ['displayName', 'shortDescription', 'longDescription', 'developerName', 'category', 'capabilities', 'websiteURL', 'supportURL', 'privacyPolicyURL', 'termsOfServiceURL', 'defaultPrompt', 'brandColor', 'brandColorDark', 'composerIcon', 'composerIconDark', 'logo', 'logoDark'];
+  for (const key of Object.keys(ui)) assert.ok(uiFields.includes(key), `.codex-plugin/plugin.json interface: ${key}`);
+  for (const key of ['displayName', 'shortDescription', 'longDescription', 'developerName', 'category', 'capabilities', 'composerIcon', 'logo']) {
+    assert.ok(ui[key] !== undefined, `interface.${key} is required in the Codex format`);
+  }
+  assert.equal(ui.displayName, claude.displayName);
+  assert.ok(ui.displayName.length <= 30 && ui.shortDescription.length <= 30, 'displayName and shortDescription: 30 characters at most');
+  assert.ok(ui.longDescription.length <= 4000 && ui.developerName.length <= 80);
+  assert.ok(Array.isArray(ui.capabilities) && ui.capabilities.length <= 20 && ui.capabilities.every((c) => c.length <= 120));
+  assert.ok(Array.isArray(ui.defaultPrompt) && ui.defaultPrompt.length >= 1 && ui.defaultPrompt.length <= 3);
+  assert.equal(new Set(ui.defaultPrompt).size, ui.defaultPrompt.length);
+  for (const prompt of ui.defaultPrompt) assert.ok(prompt.length <= 128 && !prompt.includes('@'), prompt);
+  for (const key of ['brandColor', 'brandColorDark']) if (ui[key]) assert.match(ui[key], /^#[0-9a-f]{6}$/i, key);
+  for (const key of ['websiteURL', 'supportURL', 'privacyPolicyURL', 'termsOfServiceURL']) if (ui[key]) assert.match(ui[key], /^https:\/\//, key);
+  for (const key of ['composerIcon', 'composerIconDark', 'logo', 'logoDark']) {
+    if (!ui[key]) continue;
+    assert.match(ui[key], /^\.\/[\w./-]+\.(png|jpe?g|webp|svg)$/, key);
+    assert.ok(existsSync(path.join(root, ui[key])), `${key}: ${ui[key]} is missing`);
+    if (ui[key].endsWith('.svg')) {
+      const [, w, h] = /viewBox="0 0 (\d+) (\d+)"/.exec(read(ui[key])) || [];
+      assert.ok(w === h && Number(w) >= 48, `${key} needs a square viewBox of at least 48`);
+    }
+  }
   const gemini = JSON.parse(read('gemini-extension.json'));
   assert.equal(gemini.name, portable.name);
+});
+
+test('the Codex package has a lockfile and leaves the repository tooling out', () => {
+  const lock = JSON.parse(read('package-lock.json'));
+  const pkg = JSON.parse(read('package.json'));
+  assert.equal(lock.name, pkg.name);
+  assert.equal(lock.version, pkg.version, 'run npm install --package-lock-only after a version change');
+  assert.deepEqual(Object.keys(lock.packages), [''], 'no dependencies');
+  const ignored = read('.codexignore').split('\n').filter(Boolean);
+  for (const dir of ['playground/', 'trials/', 'examples/', 'site/', 'test/']) assert.ok(ignored.includes(dir), dir);
+  assert.ok(!ignored.some((line) => /^(skills|assets|\.codex-plugin)\b/.test(line)), 'the package keeps skills, assets and its manifest');
+});
+
+test('the demo page has a link preview, and the social preview image is 1280 by 640 and under 1 MB', () => {
+  const html = read('site/index.html');
+  assert.match(html, /<meta property="og:image" content="\{\{PAGE_URL\}\}\{\{OG_IMAGE\}\}">/);
+  assert.match(html, /<meta name="twitter:card" content="summary_large_image">/);
+  const build = read('scripts/build-site.mjs');
+  assert.match(build, /const PAGE_URL = 'https:\/\/moonetix\.github\.io\/revenue-skills\/';/);
+  assert.match(build, /const OG_IMAGE = 'social-preview\.png';/);
+  const png = readFileSync(path.join(root, 'docs', 'social-preview.png'));
+  assert.equal(png.subarray(1, 4).toString(), 'PNG');
+  assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [1280, 640]);
+  assert.ok(png.length < 1024 * 1024, `${png.length} bytes`);
+  assert.equal(html.match(/Moonetix<\/a>, an affiliate network/g).length, 1, 'one maintainer credit');
+  assert.doesNotMatch(html, /Made by/);
+});
+
+test('the CI scanner job uses the pinned action and threshold from the awesome-codex-plugins guide', () => {
+  const ci = read('.github/workflows/ci.yml');
+  assert.match(ci, /uses: hashgraph-online\/ai-plugin-scanner-action@caba2e96aa8ad2feb6cf6fca52442b52e22e779f # v1\.2\.635/);
+  assert.match(ci, /min_score: 75\n/);
+  for (const file of ['ci.yml', 'pages.yml', 'plugin-branch.yml']) {
+    for (const [, ref] of read(`.github/workflows/${file}`).matchAll(/uses: [\w.-]+\/[\w.-]+@(\S+)/g)) assert.match(ref, /^[0-9a-f]{40}$/, file);
+  }
 });
 
 test('every builder skill has a trial, and the trials are listed in expected.json', () => {
