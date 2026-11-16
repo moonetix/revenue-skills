@@ -107,7 +107,7 @@
   <section class="sec" id="report" aria-labelledby="report-h">
     <div class="sec-head">
       <h2 id="report-h">The audit report, <span class="acc">as the agent wrote it</span></h2>
-      <p>An AI coding agent ran the <code>money-audit</code> skill on a copy of the first version, without the answer key, the fixed version or the tests. It found all {{PLANTED}} planted bugs, and it reported weaknesses the key does not list. Every finding names a file and a line, quotes the code and carries a proof.</p>
+      <p>An AI coding agent ran the <code>money-audit</code> skill on a copy of the first version, without the answer key, the fixed version or the tests. It found all {{PLANTED}} planted bugs, each matched to a different finding, and {{ON_TARGET}} of its {{FINDINGS}} findings point at a planted bug. Every finding names a file and a line, quotes the code there, and carries either a request proof or a step by step code trace.</p>
     </div>
     <ul class="stats" aria-label="Report in numbers">
       <li class="card stat"><b>{{FINDINGS}}</b><span>findings</span></li>
@@ -195,7 +195,7 @@ cp -r revenue-skills/playground/vulnerable coinjar
 node revenue-skills/playground/score.mjs coinjar/money-audit/findings.json</pre>
       </div>
       <p class="sr" id="copy-note" role="status" aria-live="polite"></p>
-      <p class="small muted note-line">The probe that produces the proofs only talks to 127.0.0.1 unless you name another host, and it needs Node 20 or newer. Nothing is installed besides Markdown and a few small scripts.</p>
+      <p class="small muted note-line">The probe that produces the proofs only talks to 127.0.0.1 unless you name another host, and it needs Node 20 or newer. The skills installer needs Node 22.20 or newer. Nothing is installed besides Markdown and a few small scripts.</p>
     </div>
   </section>
 
