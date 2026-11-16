@@ -8,21 +8,21 @@
 [![Skills: 10](https://img.shields.io/badge/skills-10-brightgreen)](#the-skills)
 [![Zero dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen)](package.json)
 
-Maintained by [Moonetix](https://moonetix.com).
+Maintained by [Moonetix](https://moonetix.com), an affiliate network.
 
-**[Open the live demo](https://moonetix.github.io/revenue-skills/)**: 17 attacks on a practice app, each sent to the broken and to the fixed version, and the full report an agent wrote with the audit skill.
+**[Open the live demo](https://moonetix.github.io/revenue-skills/)**: one attack for every bug planted in a practice app, each sent to the broken and to the fixed version, and the full report an agent wrote with the audit skill.
 
 An app that sells credits, grants points or pays out rewards tends to lose money in the same few ways. A webhook nobody verifies. A credit that lands twice when the provider retries. A balance that two requests spend at the same moment. A refund that leaves the goods behind. None of it shows up in a demo, and all of it shows up in production.
 
 These skills teach a coding agent to find those flaws in your code and to build the replacement. They work with Claude Code, Cursor, Codex, GitHub Copilot, Gemini CLI, OpenCode, Goose, Amp and any other agent that reads the [Agent Skills](https://agentskills.io) format.
 
-- **Findings you can check.** The audit names the file and line, quotes the code that is there, and attaches a proof: a live request against your local app, a failing test, or a step by step trace. A bundled validator rejects a finding whose quoted code is not where it says.
+- **Findings you can check.** Every finding names a file and line, quotes the code there, and carries either a request proof you can rerun or a step by step code trace. The validator checks that the quoted code is at that file and line and that the proof fields are filled in; it does not rerun the proof.
 - **Tools, not only instructions.** The skills ship a request probe that replays, races and tampers with requests against an app on your own machine, and reports how a balance moved.
-- **Measured on a real target.** The repository contains a practice app with 17 planted money bugs, the same app with all of them closed, and one exploit per bug that CI runs against both.
+- **Measured on a practice app.** The repository contains a practice app with planted money bugs, the same app with all of them closed, and one exploit per bug that CI runs against both. A second example audits a published library.
 
 ## Install
 
-With the [skills installer](https://github.com/vercel-labs/skills), into whichever agent you use:
+With the [skills installer](https://github.com/vercel-labs/skills), into whichever agent you use. The installer needs Node 22.20 or newer; the scripts inside the skills run on Node 20 or newer.
 
 ```bash
 npx skills add moonetix/revenue-skills
@@ -47,7 +47,9 @@ As a Claude Code plugin:
 
 As a Codex plugin: `codex plugin marketplace add moonetix/revenue-skills`, then pick it under `/plugins`.
 
-Or copy any folder under [`skills/`](skills/) into your agent's skills directory. Each skill is self-contained.
+As a Gemini CLI extension: `gemini extensions install https://github.com/moonetix/revenue-skills`.
+
+Or copy any folder under [`skills/`](skills/) into your agent's skills directory. Each skill is self-contained. The project-level folders the installer uses: `.claude/skills/` for Claude Code, `.agents/skills/` for Codex, Cursor, Gemini CLI, GitHub Copilot, OpenCode and Amp, `.goose/skills/` for Goose. The [installer's agent list](https://github.com/vercel-labs/skills/blob/main/docs/agents.md) has the other agents and the global folders.
 
 Then ask in plain words:
 
@@ -88,24 +90,11 @@ Every builder skill ends with a verification step: tests in your project's own f
 
 ## What the audit looks for
 
-| Class | The question it answers |
-| --- | --- |
-| Unverified inbound events | Can someone outside make the app believe a payment or conversion happened? |
-| Duplicate credit | Does a genuine event credit more than once when it arrives again? |
-| Races on a balance | Can two requests at the same moment spend or withdraw the same funds? |
-| Amounts trusted from the client | Does the server take a price, amount, plan or account from the request? |
-| Money arithmetic | Can rounding, sign or range be bent? |
-| Refunds and reversals | When money goes back, does what it bought go back too, exactly once? |
-| Promo, trial and referral abuse | Can free value be claimed repeatedly, by one person or by a script? |
-| Payout controls | Is every withdrawal limited, held and paid exactly once? |
-| Secrets and access | Are the keys and the endpoints that move money out of ordinary users' reach? |
-| Ledger and audit trail | Can every balance be explained from stored records? |
+Ten classes of money bugs, from unverified payment events and duplicate credits to payout controls and the audit trail. The [class table in the skill](skills/money-audit/SKILL.md#2-hunt-one-class-at-a-time) lists them with the question each answers, and each class has a reference with the code shapes to look for, how to prove them, and the cases that look like bugs but are not: [`skills/money-audit/references/`](skills/money-audit/references/).
 
-Each class has a reference with the code shapes to look for, how to prove them, and the cases that look like bugs but are not: [`skills/money-audit/references/`](skills/money-audit/references/).
+## What the validator checks
 
-## A finding has to prove itself
-
-The audit writes `money-audit/findings.json` and runs the validator on it before it reports anything. This is what happens when a finding cites code that is not there:
+The audit writes `money-audit/findings.json` and runs the bundled validator on it before it reports anything. The validator checks that each quoted snippet is at the file and line it names, that every proof has its fields filled in, and that all ten classes are accounted for. It does not rerun a proof. This is what it prints when a finding cites code that is not there:
 
 ```console
 $ node skills/money-audit/scripts/validate-findings.mjs money-audit/findings.json --root .
@@ -146,18 +135,22 @@ $ node skills/money-audit/scripts/probe.mjs race spend.json --parallel 10 --obse
 
 All ten succeeded, ten items were delivered, and the balance fell by the price of one. This is real output from the practice app in this repository.
 
+The probe is deliberately small. It edits JSON bodies only, keeps no cookies, and sends the same request each time apart from a per-request number, so some proofs need a test instead. [proving-findings.md](skills/money-audit/references/proving-findings.md#what-the-probe-cannot-do) lists its limits.
+
 ## Measured
 
-Before a release we run the audit the way a user would: a fresh agent session, a copy of the app with nothing else from this repository, and `money-audit` as its only guidance. One run each, with Claude Code:
+We ran the audit the way a user would: a fresh agent session, a copy of the app with nothing else from this repository, and `money-audit` as its only guidance. One run each, with Claude Code:
 
 | Target | Result |
 | --- | --- |
-| [`playground/vulnerable/`](playground/vulnerable/) | 17 of 17 planted bugs found. 24 findings, all accepted by the validator, 20 of them proved with live requests. The one finding outside the answer key was a real weakness. |
+| [`playground/vulnerable/`](playground/vulnerable/) | All 17 planted bugs found, each matched to a different finding. 24 findings, all accepted by the validator: 20 proved with requests from the probe, 4 with code traces. 23 point at a planted bug; the other one was a real weakness the key does not list. |
 | [`playground/fixed/`](playground/fixed/) | 1 finding, nine classes clear. The finding was real: a refund that arrived before its payment left the coins in the account. It is fixed now, and has a test. |
 
-The report of the first run is in [`examples/coinjar-audit/`](examples/coinjar-audit/) as the agent wrote it, with the saved probe outputs, and the [live demo](https://moonetix.github.io/revenue-skills/#report) lets you filter it. It is a spoiler for the practice app.
+The report of the first run is in [`examples/coinjar-audit/`](examples/coinjar-audit/) as the agent wrote it, with the saved probe outputs, and the [live demo](https://moonetix.github.io/revenue-skills/#report) lets you filter it. It is a spoiler for the practice app. `npm run check:example` validates and scores it.
 
-The practice app was written for this repository, so read this as an end to end check and not as a benchmark on unfamiliar code. Results vary with the agent and the model. Measure your own with the scorer below.
+The practice app was written for this repository, and the skill references were written alongside it: in that run, one probe example in `unverified-events.md` still showed a `debug=1` bypass, which matches one of the planted bugs (1.1.0 removed it). So read this as an end to end check and not as a benchmark on unfamiliar code. Results vary with the agent and the model. Measure your own with the scorer below.
+
+One run on code that was not written for this repository is in [`examples/referral-engine-audit/`](examples/referral-engine-audit/): an audit of [referral-engine](https://github.com/moonetix/referral-engine) v1.0.0, a referral and commission library by the same maintainer. It reported three ways for a payout to exceed the balance, one high and two medium. They were fixed in referral-engine 1.0.1 through [pull request #1](https://github.com/moonetix/referral-engine/pull/1), whose CI runs a parallel payout test against PostgreSQL, MySQL and MariaDB. `npm run check:example` shows the agent's tests failing on 1.0.0 and passing on 1.0.1. One library, one run.
 
 ## The practice app
 
@@ -180,6 +173,7 @@ Details are in the [playground README](playground/README.md). The [answer key](p
 
 - The audit reads code and probes only an app running on your machine. It does not change application code unless you ask for fixes.
 - The probe refuses any target that is not a loopback address unless you name the host with `--allow-host`. It sends at most 20 requests in sequence or 50 at once, and does not follow redirects. It is a proof tool, not a load or scanning tool.
+- The probe has limits that can hide a bug. It edits and reads JSON only, has no cookie jar, forms or CSRF tokens, and cuts response samples at 300 characters. `race` sends the same request each time, apart from `{{i}}`, the number of each request, so a PHP session lock, a shared idempotency key or a per-account cap can make a race look clear. In those cases the audit proves with a test in your project instead.
 - Findings never contain secret values. When a live secret is found in code, the report says where it is and what it opens.
 - Test only systems you own or are authorized to test.
 
@@ -188,7 +182,7 @@ Details are in the [playground README](playground/README.md). The [answer key](p
 ```
 skills/        ten skills, one folder each: SKILL.md, references/, scripts/, evals/
 playground/    the practice app (vulnerable and fixed), answer key, scorer
-examples/      a full audit of the practice app: findings, report, saved probe outputs
+examples/      two audits as the agent wrote them: the practice app, and referral-engine
 test/          exploits against both apps, tests for the scripts, repository rules
 scripts/       skill validation, shared-script sync, the build of the demo page
 site/          the demo page; its data is recorded from both apps at build time
@@ -202,7 +196,11 @@ npm test
 npm run validate
 ```
 
-Node 22.13 or newer for the tests and the practice app, Node 20 or newer for the scripts inside the skills. Nothing to install. [AGENTS.md](AGENTS.md) describes the rules for changes and how to add a skill. If the audit missed a bug you have seen in the wild, [tell us the shape of it](https://github.com/moonetix/revenue-skills/issues/new?template=missed-bug.yml).
+```bash
+npm run check:example
+```
+
+Node 22.13 or newer for the tests and the practice app, Node 20 or newer for the scripts inside the skills. Nothing to install. [CONTRIBUTING.md](CONTRIBUTING.md) explains how to improve a skill or add a bug to the practice app, and [AGENTS.md](AGENTS.md) holds the rules for changes. If the audit missed a bug you have seen in the wild, [tell us the shape of it](https://github.com/moonetix/revenue-skills/issues/new?template=missed-bug.yml). To report a vulnerability in the scripts, see [SECURITY.md](SECURITY.md).
 
 ## Further reading
 
@@ -211,7 +209,7 @@ Node 22.13 or newer for the tests and the practice app, Node 20 or newer for the
 
 ## About Moonetix
 
-Moonetix is an affiliate network. Publishers add its offerwall to an app, game, website, bot or community, and users earn the publisher's own currency by completing offers. Publisher accounts: [moonetix.com/register](https://moonetix.com/register?from=github-revenue-skills).
+Moonetix is an affiliate network. Publishers add its offerwall to an app, game, website, bot or community, and users earn the publisher's own currency by completing offers. [moonetix.com](https://moonetix.com)
 
 ## License
 

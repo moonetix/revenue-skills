@@ -68,13 +68,24 @@ test('the vulnerable app carries no hints and the skills carry no spoilers', () 
     assert.doesNotMatch(readFileSync(file, 'utf8'), /\b(bug|vulnerab|exploit|insecure|unsafe|todo|fixme|V\d\d)\b/i, file);
   }
   for (const file of walk(path.join(root, 'skills'))) {
-    if (!/\.(md|json)$/.test(file) || file.endsWith(path.join('money-audit', 'evals', 'evals.json'))) continue;
-    assert.doesNotMatch(readFileSync(file, 'utf8'), /coinjar|paylane|offerly/i, file);
+    if (!/\.(md|json|mjs)$/.test(file)) continue;
+    assert.doesNotMatch(readFileSync(file, 'utf8'), /coinjar|paylane|offerly|debug=1/i, file);
   }
 });
 
 test('public text follows the house style', () => {
-  const files = ['README.md', 'AGENTS.md', 'CHANGELOG.md', 'playground/README.md', 'playground/ANSWER-KEY.md'];
+  const files = [
+    'README.md',
+    'AGENTS.md',
+    'CHANGELOG.md',
+    'CONTRIBUTING.md',
+    'SECURITY.md',
+    'playground/README.md',
+    'playground/ANSWER-KEY.md',
+    'examples/coinjar-audit/README.md',
+    'examples/referral-engine-audit/README.md',
+    'site/index.html',
+  ];
   for (const file of files) {
     const text = read(file);
     assert.doesNotMatch(text, /[–—]/, `${file} has an em or en dash`);
@@ -86,8 +97,24 @@ test('public text follows the house style', () => {
 test('versions agree', () => {
   const version = JSON.parse(read('package.json')).version;
   assert.equal(JSON.parse(read('.claude-plugin/marketplace.json')).metadata.version, version);
+  for (const manifest of ['plugin.json', '.claude-plugin/plugin.json', '.codex-plugin/plugin.json', 'gemini-extension.json']) {
+    assert.equal(JSON.parse(read(manifest)).version, version, manifest);
+  }
   assert.match(read('CHANGELOG.md'), new RegExp(`^## \\[${version.replace(/\./g, '\\.')}\\]`, 'm'));
   for (const name of readdirSync(path.join(root, 'skills'))) {
     assert.match(read(`skills/${name}/SKILL.md`), new RegExp(`version: "${version.replace(/\./g, '\\.')}"`), name);
   }
+});
+
+test('plugin manifests use only the fields their formats define', () => {
+  const portable = JSON.parse(read('plugin.json'));
+  assert.equal(portable.$schema, 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json');
+  const allowed = ['$schema', 'name', 'version', 'description', 'author', 'homepage', 'repository', 'license', 'keywords', 'extensions'];
+  for (const key of Object.keys(portable)) assert.ok(allowed.includes(key), `plugin.json: ${key}`);
+  assert.match(portable.name, /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/);
+  const marketplace = JSON.parse(read('.claude-plugin/marketplace.json'));
+  for (const key of Object.keys(marketplace.metadata)) assert.ok(['description', 'version', 'pluginRoot'].includes(key), `marketplace metadata: ${key}`);
+  assert.equal(JSON.parse(read('.claude-plugin/plugin.json')).skills, undefined, 'skills/ is scanned by default');
+  const gemini = JSON.parse(read('gemini-extension.json'));
+  assert.equal(gemini.name, portable.name);
 });
