@@ -15,8 +15,8 @@ jobs:
       matrix:
         node: [22, 24]
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node }}
       - name: Skills follow the specification and the shared scripts are in sync
@@ -25,13 +25,15 @@ jobs:
         run: npm test
       - name: The demo page builds from a fresh run of every attack
         run: npm run site
+      - name: Both example audits still validate, and the referral-engine proofs fail before the fix and pass after it
+        run: npm run check:example
 
   scripts-on-node-20:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 20
       - name: The bundled scripts run on Node 20
