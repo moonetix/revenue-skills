@@ -666,7 +666,12 @@ const fill = {
   FOUND: scored.found.length,
   ON_TARGET: scored.onTarget,
   SKILLS: skills.length,
+  BUILDERS: skills.length - 1,
   CLASSES: CLASSES.length,
+  AUDIT_DATE: report.date,
+  BUILT: data.built.date,
+  NODE: data.built.node,
+  COMMIT: data.built.commit || 'local build',
 };
 let html = read('site', 'index.html');
 for (const [name, value] of Object.entries(fill)) html = html.replaceAll(`{{${name}}}`, String(value));

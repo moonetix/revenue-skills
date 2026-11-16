@@ -36,7 +36,6 @@ function icon(name) {
   return svg;
 }
 
-// Text with `code` spans, as the report and the answer key write it.
 function rich(text) {
   return String(text)
     .split('`')
@@ -61,9 +60,16 @@ function source(code, label) {
   const pre = h('pre', { class: 'src', tabindex: '0', role: 'region', 'aria-label': label });
   code.lines.forEach((line, i) => {
     const n = code.from + i;
-    pre.append(h('span', { class: n === code.mark ? 'l mark' : 'l' }, h('i', { text: String(n) }), h('span', { class: 'c', text: line || ' ' })));
+    const indent = line.match(/^ */)[0].length;
+    const text = h('span', { class: 'c', text: line.slice(indent) || ' ' });
+    text.style.setProperty('--in', String(indent));
+    pre.append(h('span', { class: n === code.mark ? 'l mark' : 'l' }, h('i', { text: String(n) }), text));
   });
   return pre;
+}
+
+function verdictTag(bad) {
+  return h('span', { class: `tag ${bad ? 'bad' : 'good'}` }, icon(bad ? 'x' : 'check'), bad ? 'loses money' : 'holds');
 }
 
 function stagger(nodes) {
@@ -85,7 +91,6 @@ try {
 if (data) {
   const classTitle = Object.fromEntries(data.classes.map((c) => [c.id, c.title]));
   const attackOf = new Map();
-  // The first finding of an attack is the one the scorer paired with it; the others also point at its code.
   for (const attack of data.attacks) if (attack.findings.length) attackOf.set(attack.findings[0], attack.id);
   for (const attack of data.attacks) for (const id of attack.findings) if (!attackOf.has(id)) attackOf.set(id, attack.id);
   const params = new URLSearchParams(location.search);
@@ -97,22 +102,26 @@ if (data) {
     history.replaceState(null, '', `${location.pathname}${query ? `?${query}` : ''}${location.hash}`);
   };
 
-  // --- hero
-
   const race = data.attacks.find((a) => a.id === 'V05') || data.attacks[0];
   const heroRow = (label, run, bad) => {
     const burst = run.steps.find((s) => s.kind === 'request' && s.n > 1) || run.steps.find((s) => s.kind === 'request');
     return h(
       'div',
-      { class: `hero-run ${bad ? 'bad' : 'good'}` },
-      h('p', { class: 'hero-run-h' }, h('b', { text: label }), h('span', { class: `tag ${bad ? 'bad' : 'good'}`, text: bad ? 'loses money' : 'holds' })),
+      { class: `sample-row ${bad ? 'bad' : 'good'}` },
+      h('p', { class: 'sample-l' }, h('span', { text: label }), verdictTag(bad)),
       cells(burst.statuses),
-      h('p', { class: 'hero-run-out', text: run.outcome }),
+      h('p', { class: 'sample-out', text: run.outcome }),
     );
   };
   $('hero-preview').replaceChildren(heroRow('First version', race.runs.vulnerable, true), heroRow('Fixed version', race.runs.fixed, false));
-
-  // --- lab
+  $('sample-open').href = `?attack=${race.id}#lab`;
+  $('sample-open').addEventListener('click', (ev) => {
+    ev.preventDefault();
+    openAttack(race.id);
+  });
+  if (data.built.commit) {
+    $('fact-commit').replaceChildren(h('a', { class: 'mono', href: `${REPO}/commit/${data.built.commit}`, text: data.built.commit }));
+  }
 
   const list = $('lab-list');
   const select = $('lab-select');
@@ -139,42 +148,49 @@ if (data) {
   const order = options.map((o) => o.dataset.id);
   let current = order.includes(params.get('attack')) ? params.get('attack') : order[0];
 
-  function runCard(label, run, bad) {
-    const steps = run.steps.map((step) => {
-      if (step.kind === 'note') return h('li', { class: 'step note', text: step.text });
-      const request = [h('b', { text: step.line }), ...step.shows.map((s) => h('span', { text: s })), step.body ? h('span', { text: step.body }) : null];
-      const sample = step.samples.map((s) => h('code', { class: 'resp-body', text: `${s.status}  ${s.body}` }));
-      return h(
-        'li',
-        { class: 'step' },
-        h('p', { class: 'step-what', text: step.what }),
-        h('div', { class: 'req' }, request),
-        h('div', { class: 'resp' }, h('span', { class: 'resp-l', text: step.n > 1 ? `${step.n} answers` : 'Answer' }), step.n > 1 ? cells(step.statuses) : statusPills(step.statuses)),
-        sample,
-      );
-    });
-    const facts = h('dl', { class: 'kv' }, run.facts.map((f) => h('div', {}, h('dt', { text: f.label }), h('dd', { text: f.value }))));
-    const verdict = h('p', { class: `verdict ${bad ? 'bad' : 'good'}` }, icon(bad ? 'x' : 'check'), h('span', { text: run.outcome }));
-    stagger([...steps, facts, verdict]);
+  function stepCell(step, label) {
+    if (!step) return h('div', { class: 'c-step empty', 'aria-hidden': 'true' });
+    const who = h('span', { class: 'sr', text: `${label}: ` });
+    if (step.kind === 'note') return h('div', { class: 'c-step note' }, h('p', {}, who, step.text));
+    const request = [h('b', { text: step.line }), ...step.shows.map((s) => h('span', { text: s })), step.body ? h('span', { text: step.body }) : null];
+    const sample = step.samples.map((s) => h('code', { class: 'resp-body', text: `${s.status}  ${s.body}` }));
     return h(
-      'article',
-      { class: `card run ${bad ? 'run-bad' : 'run-good'}` },
-      h('header', { class: 'run-h' }, h('h4', { text: label }), h('span', { class: `tag ${bad ? 'bad' : 'good'}`, text: bad ? 'loses money' : 'holds' })),
-      h('ol', { class: 'steps' }, steps),
-      facts,
-      verdict,
+      'div',
+      { class: 'c-step' },
+      h('p', { class: 'step-what' }, who, step.what),
+      h('div', { class: 'req' }, request),
+      h('div', { class: 'resp' }, h('span', { class: 'resp-l', text: step.n > 1 ? `${step.n} answers` : 'Answer' }), step.n > 1 ? cells(step.statuses) : statusPills(step.statuses)),
+      sample,
     );
   }
 
-  function codeCard(title, text, code, variant) {
+  function whyCell(title, text, code, variant) {
     const path = `playground/${variant}/${code.file}`;
     return h(
-      'article',
-      { class: 'card why' },
-      h('header', { class: 'run-h' }, h('h4', { text: title }), h('a', { class: 'file', href: `${REPO}/blob/main/${path}#L${code.mark || code.from}`, text: `${code.file}:${code.mark || code.from}` })),
+      'div',
+      { class: 'c-why' },
+      h('div', { class: 'why-h' }, h('h4', { text: title }), h('a', { class: 'file', href: `${REPO}/blob/main/${path}#L${code.mark || code.from}`, text: `${code.file}:${code.mark || code.from}` })),
       h('p', {}, rich(text)),
       source(code, `${title}: ${path}`),
     );
+  }
+
+  function compare(attack) {
+    const sides = [
+      { label: 'First version', run: attack.runs.vulnerable, bad: true, cls: 'vu' },
+      { label: 'Fixed version', run: attack.runs.fixed, bad: false, cls: 'fx' },
+    ];
+    const rows = [];
+    rows.push(sides.map((s) => h('div', { class: 'c-h' }, h('h4', { text: s.label }), verdictTag(s.bad))));
+    const n = Math.max(...sides.map((s) => s.run.steps.length));
+    for (let i = 0; i < n; i += 1) rows.push(sides.map((s) => stepCell(s.run.steps[i], s.label)));
+    rows.push(sides.map((s) => h('div', { class: 'c-facts' }, h('dl', { class: 'kv' }, s.run.facts.map((f) => h('div', {}, h('dt', { text: f.label }), h('dd', { text: f.value })))))));
+    rows.push(sides.map((s) => h('p', { class: `c-verdict ${s.bad ? 'bad' : 'good'}` }, icon(s.bad ? 'x' : 'check'), h('span', { class: 'sr', text: `${s.label}: ` }), h('span', { text: s.run.outcome }))));
+    rows.push([whyCell('Why it worked', attack.wrong, attack.code.vulnerable, 'vulnerable'), whyCell('What closes it', attack.fix, attack.code.fixed, 'fixed')]);
+    for (const row of rows) row.forEach((cell, i) => cell.classList.add(sides[i].cls));
+    const cellsOut = rows.flat();
+    stagger(cellsOut.slice(2));
+    return cellsOut;
   }
 
   function show(id, focus) {
@@ -194,15 +210,11 @@ if (data) {
       }
     }
     select.value = id;
-    $('lab-tags').replaceChildren(h('span', { class: 'vid', text: attack.id }), h('span', { class: 'chip', text: classTitle[attack.class] }));
+    $('lab-tags').replaceChildren(h('span', { class: 'vid', text: attack.id }), `, ${classTitle[attack.class]}`);
     $('lab-count').textContent = `${order.indexOf(id) + 1} of ${order.length}`;
     $('lab-title').textContent = attack.title;
     $('lab-story').textContent = attack.story;
-    $('lab-runs').replaceChildren(runCard('First version', attack.runs.vulnerable, true), runCard('Fixed version', attack.runs.fixed, false));
-    $('lab-code').replaceChildren(
-      codeCard('Why it worked', attack.wrong, attack.code.vulnerable, 'vulnerable'),
-      codeCard('What closes it', attack.fix, attack.code.fixed, 'fixed'),
-    );
+    $('lab-runs').replaceChildren(...compare(attack));
     const foot = $('lab-foot');
     foot.hidden = false;
     foot.replaceChildren(
@@ -213,12 +225,13 @@ if (data) {
         h('p', { class: 'ask-q', text: attack.ask }),
         h('button', { class: 'btn copy', type: 'button', 'data-copy-text': attack.ask, 'data-name': 'Prompt', text: 'Copy prompt' }),
       ),
-      h('p', {}, attack.skill === 'money-audit' ? 'Reported by the skill ' : 'The fix is what this skill builds: ', h('a', { href: '#skills', class: 'skill-link', text: attack.skill })),
       h(
-        'p',
-        { class: 'foot-findings' },
-        'In the audit report: ',
-        attack.findings.map((fid) => h('button', { class: 'btn copy', type: 'button', text: fid, onclick: () => openFinding(fid) })),
+        'div',
+        { class: 'lab-links' },
+        h('span', {}, attack.skill === 'money-audit' ? 'Reported by the skill' : 'The fix is what this skill builds:', h('a', { href: `#skill-${attack.skill}`, class: 'skill-link', text: attack.skill })),
+        attack.findings.length
+          ? h('span', {}, 'In the audit report:', attack.findings.map((fid) => h('button', { class: 'linkish mono', type: 'button', text: fid, onclick: () => openFinding(fid) })))
+          : null,
       ),
     );
     remember('attack', id === order[0] ? '' : id);
@@ -276,14 +289,12 @@ if (data) {
     $('lab-note').append(` Recorded on ${data.built.date} from commit `, h('a', { href: `${REPO}/commit/${data.built.commit}`, text: data.built.commit }), '.');
   }
 
-  // --- report
-
   const report = data.report;
   const state = { severity: '', cls: '', q: '' };
   const sevBox = $('rep-sev');
   const sevButtons = [['', 'All', report.findings.length], ...SEVERITIES.map((s) => [s, s[0].toUpperCase() + s.slice(1), report.counts[s]])].map(
     ([value, label, count]) =>
-      h('button', { class: `btn sev-btn${value ? ` sev-${value}` : ''}`, type: 'button', 'aria-pressed': String(value === ''), 'data-sev': value }, label, h('small', { text: String(count) })),
+      h('button', { class: 'btn sev-btn', type: 'button', 'aria-pressed': String(value === ''), 'data-sev': value }, label, h('small', { text: String(count) })),
   );
   sevBox.append(...sevButtons);
   const classSelect = $('rep-class');
@@ -309,7 +320,7 @@ if (data) {
     } else {
       proof.push(
         h('div', { class: 'snip' }, h('div', { class: 'snip-top' }, h('span', { text: 'Commands that were run' }), copyButton(f.proof.command, 'Commands')), h('pre', { class: 'code wrap', tabindex: '0', text: f.proof.command.replace(/; /g, ';\n') })),
-        /\$[PR]\b/.test(f.proof.command) ? h('p', { class: 'small muted', text: '$P is the probe script of the skill, $R the folder of request files the agent wrote. The full legend is under "How the app was run" below.' }) : null,
+        /\$[PR]\b/.test(f.proof.command) ? h('p', { class: 'muted', text: '$P is the probe script of the skill, $R the folder of request files the agent wrote. The full legend is under "How the app was run" below.' }) : null,
         h('p', {}, rich(f.proof.result)),
       );
     }
@@ -330,7 +341,7 @@ if (data) {
     );
     const el = h(
       'details',
-      { class: 'card finding', id: `finding-${f.id}`, 'data-sev': f.severity, 'data-class': f.class },
+      { class: 'finding', id: `finding-${f.id}`, 'data-sev': f.severity, 'data-class': f.class },
       h(
         'summary',
         {},
@@ -348,7 +359,7 @@ if (data) {
 
   const ranked = [...report.findings].sort((a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity) || a.id.localeCompare(b.id));
   const cards = ranked.map(findingCard);
-  $('rep-list').append(...cards, h('p', { class: 'card empty', id: 'rep-empty', hidden: true, text: 'No finding matches. Clear the search or choose another class.' }));
+  $('rep-list').append(...cards, h('p', { class: 'empty', id: 'rep-empty', hidden: true, text: 'No finding matches. Clear the search or choose another class.' }));
 
   function applyFilters() {
     const words = state.q.toLowerCase().split(/\s+/).filter(Boolean);
@@ -425,8 +436,6 @@ if (data) {
   $('rep-notes').append(h('ul', { class: 'notes' }, report.notes.map((note) => h('li', {}, rich(note)))));
   $('rep-env').append(h('p', {}, rich(report.environment)));
 
-  // --- skills
-
   const skills = [...data.skills].sort((a, b) => {
     const [x, y] = [SKILL_ORDER.indexOf(a.name), SKILL_ORDER.indexOf(b.name)];
     return (x < 0 ? 99 : x) - (y < 0 ? 99 : y) || a.name.localeCompare(b.name);
@@ -435,13 +444,12 @@ if (data) {
     ...skills.map((skill) =>
       h(
         'li',
-        { class: 'card skill', id: `skill-${skill.name}` },
-        h('div', { class: 'skill-h' }, h('h3', {}, h('code', { text: skill.name })), h('span', { class: `tag ${skill.name === 'money-audit' ? 'warn' : 'good'}`, text: skill.name === 'money-audit' ? 'finds' : 'builds' })),
-        h('p', { text: skill.does }),
-        h('p', { class: 'small muted', text: skill.when }),
+        { class: 'skill', id: `skill-${skill.name}` },
+        h('div', { class: 'skill-n' }, h('h3', { text: skill.name }), h('span', { class: 'tag', text: skill.name === 'money-audit' ? 'Finds bugs' : 'Builds' })),
+        h('div', { class: 'skill-d' }, h('p', { text: skill.does }), h('p', { text: skill.when })),
         h(
           'div',
-          { class: 'skill-foot' },
+          { class: 'skill-a' },
           h('button', { class: 'btn copy', type: 'button', 'data-copy-text': `npx skills add moonetix/revenue-skills --skill ${skill.name}`, 'data-name': `Install command for ${skill.name}`, text: 'Copy install command' }),
           h('a', { href: `${REPO}/blob/main/skills/${skill.name}/SKILL.md`, text: 'Read the skill' }),
         ),
@@ -450,7 +458,6 @@ if (data) {
   );
 }
 
-// Copy buttons made after page load carry their text with them.
 const copyTimers = new WeakMap();
 document.addEventListener('click', async (ev) => {
   const button = ev.target.closest('button[data-copy-text]');
