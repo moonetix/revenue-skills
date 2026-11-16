@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-11-16
+
+### Changed
+
+- The trial checkers, the practice app tests, the provider signing tests and the demo page build no longer hold key-like test values in the source: the checkers and the signing tests generate a fresh secret per run, and the practice app tests take the app's own built-in test values. The HOL AI Plugin Scanner reported 36 hardcoded secret findings for those test constants; none was a real secret.
+- The `plugin` branch also carries the root `plugin.json` (Agent Plugins 1.0.0), so plugin hosts that read it, such as the GitHub Copilot CLI marketplace, can install from the branch without the practice app and the trials.
+- `.codex-plugin/plugin.json` lists the same keywords as the root manifest.
+
 ## [1.3.0] - 2026-11-16
 
 ### Added
@@ -107,7 +115,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - One exploit per planted bug, run in CI against both versions of the app.
 - Plugin manifests for Claude Code and Codex, and `evals/evals.json` for every skill.
 
-[Unreleased]: https://github.com/moonetix/revenue-skills/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/moonetix/revenue-skills/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/moonetix/revenue-skills/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/moonetix/revenue-skills/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/moonetix/revenue-skills/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/moonetix/revenue-skills/compare/v1.0.0...v1.1.0
