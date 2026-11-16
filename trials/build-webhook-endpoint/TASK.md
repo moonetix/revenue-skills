@@ -1,0 +1,3 @@
+Add Stripe webhooks to Coinbarn so that paying for a coin pack actually credits the coins. Today `POST /api/checkout` creates a pending order and sends the buyer to Stripe Checkout, but nothing happens after they pay. Stripe should call `POST /webhooks/stripe`; the endpoint signing secret will be in the `STRIPE_WEBHOOK_SECRET` environment variable. We use Checkout in payment mode, the session's `client_reference_id` is our order id, and some buyers pay with delayed methods, so `checkout.session.completed` and `checkout.session.async_payment_succeeded` are both enabled in the dashboard.
+
+When an order is paid, the buyer's balance (`GET /api/me` -> `balance`) should go up by the pack's coins. Keep everything else working as it does now.

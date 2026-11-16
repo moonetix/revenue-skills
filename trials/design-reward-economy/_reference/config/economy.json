@@ -1,0 +1,34 @@
+{
+  "_note": "Coinbarn economy, 2026-11-15. Measured numbers from data/owner-notes.md (Aug to Oct 2026 averages); decisions marked as such.",
+  "currency": {
+    "_note": "Rate raised from 1,000 to 10,000 so the smallest reward ($0.05 at 52%) is 260 coins. Existing balances are multiplied by 10 so they keep their dollar value.",
+    "name": "coins",
+    "coinsPerDollar": 10000,
+    "redeemCoinsPerDollar": 10000
+  },
+  "earning": { "_note": "Share chosen with the break-even lines: below the highest share that keeps a 15% margin in the worst case.", "userSharePct": 52, "smallestPayoutUsd": 0.05 },
+  "volume": { "_note": "Owner notes: monthly averages, Aug to Oct 2026.", "monthlyRevenueUsd": 12000, "activeUsers": 3000, "newUsers": 1800 },
+  "bonuses": [
+    { "name": "sign-up bonus", "type": "per_new_user", "coins": 2000, "takeUpPct": 100, "requiresEarning": true, "_note": "No take-up data: 100%. Credited after the first real earning." },
+    { "name": "daily check-in", "type": "per_active_user_per_day", "coins": 50, "takeUpPct": 30, "_note": "30% of active users check in on an average day (owner notes)." },
+    { "name": "referral commission", "type": "referral", "pct": 10, "coveragePct": 20, "_note": "Paid on about 20% of offer earnings (owner notes)." }
+  ],
+  "payout": { "_note": "Giftly fees 2% + $0.25, paid by the app; average payout $11; 92% of coins are cashed out (owner notes).", "minimumUsd": 2, "feePct": 2, "feeFixedUsd": 0.25, "feePaidBy": "app", "averagePayoutUsd": 11, "redemptionPct": 92 },
+  "reversals": {
+    "_note": "7% reversed; arrival curve and 25% late recovery from owner notes. 45 days catches 94%.",
+    "ratePct": 7,
+    "holdDays": 45,
+    "lateRecoveryPct": 25,
+    "arrival": [
+      { "days": 7, "pct": 30 },
+      { "days": 14, "pct": 55 },
+      { "days": 30, "pct": 85 },
+      { "days": 45, "pct": 94 },
+      { "days": 60, "pct": 98 },
+      { "days": 90, "pct": 100 }
+    ]
+  },
+  "costs": { "_note": "Owner notes.", "otherPctOfRevenue": 3, "fixedMonthlyUsd": 1200 },
+  "cash": { "_note": "9,000,000 coins at the old rate are 90,000,000 at the new one ($9,000). Reserve, receivables and payment delay from owner notes.", "outstandingCoins": 90000000, "reserveUsd": 15000, "receivablesUsd": 14000, "networkPaymentDelayDays": 40 },
+  "targets": { "_note": "Owner decisions, 2026-11-14.", "minMarginPct": 15, "maxBonusPctOfRevenue": 10, "maxDaysToMinimumPayout": 30, "minReversalsInsideHoldPct": 90 }
+}

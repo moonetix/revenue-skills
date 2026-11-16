@@ -1,0 +1,105 @@
+import { randomUUID } from 'node:crypto';
+import { now } from '../db.mjs';
+import { requireUser, wholeCoins } from '../lib/http.mjs';
+
+export default function payoutRoutes(app) {
+  const { db, ledger, config } = app;
+
+  // Only coins earned from offers can be cashed out, and only after the hold period,
+  // because offers can still be reversed. Bought, promo and referral coins are for spending.
+  function withdrawable(userId, balance) {
+    const matured = ledger.sum(userId, ['offer'], now() - config.payoutHoldSeconds);
+    const reversed = ledger.sum(userId, ['offer_reversal']);
+    const paidOut = ledger.sum(userId, ['payout', 'payout_refund']);
+    return Math.max(0, Math.min(balance, matured + reversed + paidOut));
+  }
+
+  // Calls the provider for a payout whose coins are already taken. The payout id is the
+  // idempotency key, so sending again can never issue a second card. Only a definite
+  // refusal gives the coins back. A timeout or a dropped connection says nothing about
+  // whether the card was issued: the payout stays 'unknown' until resolvePayouts() asks again.
+  async function send(payout) {
+    try {
+      const card = await app.giftcards.send({ userId: payout.user_id, cents: payout.cents, idempotencyKey: payout.id });
+      db.prepare("UPDATE payouts SET status = 'paid' WHERE id = ? AND status IN ('pending', 'unknown')").run(payout.id);
+      return { status: 'paid', code: card.code };
+    } catch (err) {
+      if (err?.code !== 'refused') {
+        db.prepare("UPDATE payouts SET status = 'unknown' WHERE id = ? AND status = 'pending'").run(payout.id);
+        return { status: 'unknown' };
+      }
+      ledger.atomic(() => {
+        const failed = db
+          .prepare("UPDATE payouts SET status = 'failed' WHERE id = ? AND status IN ('pending', 'unknown')")
+          .run(payout.id);
+        if (failed.changes) ledger.entry({ userId: payout.user_id, amount: payout.coins, kind: 'payout_refund', ref: payout.id });
+      });
+      return { status: 'failed' };
+    }
+  }
+
+  // Run on a schedule, and by staff through POST /admin/payouts/resolve.
+  app.resolvePayouts = async () => {
+    const counts = { paid: 0, failed: 0, unknown: 0 };
+    const open = db.prepare("SELECT id, user_id, coins, cents FROM payouts WHERE status = 'unknown' ORDER BY created_at").all();
+    for (const payout of open) counts[(await send(payout)).status] += 1;
+    return counts;
+  };
+
+  app.route(
+    'POST',
+    '/api/payouts',
+    requireUser(async (ctx) => {
+      const coins = wholeCoins(ctx.body?.amount, config.payoutDailyMaxCoins);
+      if (!coins || coins < config.payoutMinCoins) return ctx.send(400, { error: 'invalid_amount' });
+      const cents = (coins * 100) / config.coinsPerDollar;
+      if (!Number.isSafeInteger(cents)) return ctx.send(400, { error: 'invalid_amount' });
+      const key = ctx.req.headers['idempotency-key'];
+      if (key !== undefined && !/^[A-Za-z0-9_-]{8,64}$/.test(key)) return ctx.send(400, { error: 'invalid_idempotency_key' });
+      const requestKey = key ?? randomUUID();
+      const payoutId = randomUUID();
+      const findByKey = db.prepare('SELECT id, status FROM payouts WHERE user_id = ? AND request_key = ?');
+
+      // The coins leave the balance before the provider is called. Two requests at once
+      // cannot both pass, because this block runs as one transaction.
+      let existing = null;
+      const refusal = ledger.atomic(() => {
+        existing = findByKey.get(ctx.user.id, requestKey);
+        if (existing) return null;
+        const user = db.prepare('SELECT balance FROM users WHERE id = ?').get(ctx.user.id);
+        if (coins > withdrawable(ctx.user.id, user.balance)) return 'not_withdrawable_yet';
+        const paidOutUntil = (time) => -ledger.sum(ctx.user.id, ['payout', 'payout_refund'], time);
+        const lastDay = paidOutUntil(now()) - paidOutUntil(now() - 24 * 3600);
+        if (lastDay + coins > config.payoutDailyMaxCoins) return 'daily_limit_reached';
+        const count = db
+          .prepare("SELECT COUNT(*) AS n FROM payouts WHERE user_id = ? AND created_at > ? AND status <> 'failed'")
+          .get(ctx.user.id, now() - 24 * 3600).n;
+        if (count >= config.payoutDailyMaxCount) return 'daily_limit_reached';
+        ledger.entry({ userId: ctx.user.id, amount: -coins, kind: 'payout', ref: payoutId });
+        db.prepare(
+          "INSERT INTO payouts (id, user_id, request_key, coins, cents, status, created_at) VALUES (?, ?, ?, ?, ?, 'pending', ?)",
+        ).run(payoutId, ctx.user.id, requestKey, coins, cents, now());
+        return null;
+      });
+      if (refusal) return ctx.send(409, { error: refusal });
+      if (existing) return ctx.send(200, { payout_id: existing.id, status: existing.status, repeated: true });
+
+      const outcome = await send({ id: payoutId, user_id: ctx.user.id, coins, cents });
+      if (outcome.status === 'paid') return ctx.send(200, { payout_id: payoutId, status: 'paid', cents, code: outcome.code });
+      if (outcome.status === 'failed') return ctx.send(502, { error: 'payout_failed_coins_returned', payout_id: payoutId, status: 'failed' });
+      ctx.send(202, { payout_id: payoutId, status: 'processing' });
+    }),
+  );
+
+  app.route(
+    'GET',
+    '/api/payouts',
+    requireUser((ctx) => {
+      const rows = db
+        .prepare('SELECT id, coins, cents, status, created_at FROM payouts WHERE user_id = ? ORDER BY created_at DESC')
+        .all(ctx.user.id);
+      const user = db.prepare('SELECT balance FROM users WHERE id = ?').get(ctx.user.id);
+      ctx.send(200, { withdrawable: withdrawable(ctx.user.id, user.balance), payouts: rows });
+    }),
+  );
+}

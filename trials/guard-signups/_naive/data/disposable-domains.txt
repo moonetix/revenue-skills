@@ -1,0 +1,11 @@
+# Throwaway email domains we have seen. One domain per line. Subdomains count too.
+10minutemail.com
+dispostable.com
+getnada.com
+guerrillamail.com
+mailinator.com
+maildrop.cc
+sharklasers.com
+tempmail.dev
+trashmail.com
+yopmail.com

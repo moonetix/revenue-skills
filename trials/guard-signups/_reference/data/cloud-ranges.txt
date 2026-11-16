@@ -1,0 +1,7 @@
+# Cloud and hosting provider ranges (datacenter addresses). One CIDR per line.
+3.5.140.0/22
+5.9.0.0/16
+34.64.0.0/10
+51.38.0.0/16
+104.131.0.0/16
+2600:1f00::/24

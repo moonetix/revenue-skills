@@ -85,6 +85,7 @@ test('public text follows the house style', () => {
     'examples/coinjar-audit/README.md',
     'examples/referral-engine-audit/README.md',
     'site/index.html',
+    'trials/README.md',
   ];
   for (const file of files) {
     const text = read(file);
@@ -117,4 +118,35 @@ test('plugin manifests use only the fields their formats define', () => {
   assert.equal(JSON.parse(read('.claude-plugin/plugin.json')).skills, undefined, 'skills/ is scanned by default');
   const gemini = JSON.parse(read('gemini-extension.json'));
   assert.equal(gemini.name, portable.name);
+});
+
+test('every builder skill has a trial, and the trials are listed in expected.json', () => {
+  const builders = readdirSync(path.join(root, 'skills')).filter((name) => name !== 'money-audit').sort();
+  for (const name of builders) {
+    for (const part of ['TASK.md', 'check.mjs', 'RUBRIC.md', 'workspace/server.mjs', '_reference/server.mjs', '_naive/server.mjs']) {
+      assert.ok(existsSync(path.join(root, 'trials', name, part)), `trials/${name}/${part} is missing`);
+    }
+  }
+  const expected = JSON.parse(read('trials/expected.json'));
+  assert.deepEqual(Object.keys(expected).sort(), builders);
+  for (const [name, { checks, naive_fails: fails }] of Object.entries(expected)) {
+    const rows = [...read(`trials/${name}/RUBRIC.md`).matchAll(/^\| ([A-Z]\d\d(?:, [A-Z]\d\d)*) \|/gm)];
+    const ids = new Set(rows.flatMap((m) => m[1].split(', ')));
+    assert.equal(ids.size, checks, `trials/${name}/RUBRIC.md lists ${ids.size} checks, expected.json says ${checks}`);
+    for (const id of fails) assert.ok(ids.has(id), `${name}: ${id} is not a check in RUBRIC.md`);
+  }
+});
+
+test('trials/ holds no machine paths', () => {
+  const walk = (dir) =>
+    readdirSync(dir).flatMap((name) => {
+      const full = path.join(dir, name);
+      return statSync(full).isDirectory() ? (name === '.run' ? [] : walk(full)) : [full];
+    });
+  for (const file of walk(path.join(root, 'trials'))) {
+    const text = readFileSync(file, 'utf8');
+    assert.doesNotMatch(text, /(?<![\w.])\/(?:root|home|tmp|Users|var|opt|private|mnt|srv)\//, file);
+    assert.doesNotMatch(text, /\b[A-Z]:\\/, file);
+    assert.doesNotMatch(text, /\bflock\b|heavy\.lock|\.scratch/, file);
+  }
 });

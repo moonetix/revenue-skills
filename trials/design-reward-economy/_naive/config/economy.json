@@ -1,0 +1,92 @@
+{
+  "currency": {
+    "name": "coins",
+    "coinsPerDollar": 10000,
+    "redeemCoinsPerDollar": 10000
+  },
+  "earning": {
+    "userSharePct": 60,
+    "smallestPayoutUsd": 0.05
+  },
+  "volume": {
+    "monthlyRevenueUsd": 12000,
+    "activeUsers": 3000,
+    "newUsers": 1800
+  },
+  "bonuses": [
+    {
+      "name": "sign-up bonus",
+      "type": "per_new_user",
+      "coins": 2000,
+      "takeUpPct": 100,
+      "requiresEarning": true
+    },
+    {
+      "name": "daily check-in",
+      "type": "per_active_user_per_day",
+      "coins": 50,
+      "takeUpPct": 30
+    },
+    {
+      "name": "referral commission",
+      "type": "referral",
+      "pct": 10,
+      "coveragePct": 20
+    }
+  ],
+  "payout": {
+    "minimumUsd": 2,
+    "feePct": 0,
+    "feeFixedUsd": 0,
+    "feePaidBy": "app",
+    "averagePayoutUsd": 11,
+    "redemptionPct": 70
+  },
+  "reversals": {
+    "ratePct": 7,
+    "holdDays": 30,
+    "lateRecoveryPct": 25,
+    "arrival": [
+      {
+        "days": 7,
+        "pct": 30
+      },
+      {
+        "days": 14,
+        "pct": 55
+      },
+      {
+        "days": 30,
+        "pct": 85
+      },
+      {
+        "days": 45,
+        "pct": 94
+      },
+      {
+        "days": 60,
+        "pct": 98
+      },
+      {
+        "days": 90,
+        "pct": 100
+      }
+    ]
+  },
+  "costs": {
+    "otherPctOfRevenue": 3,
+    "fixedMonthlyUsd": 1200
+  },
+  "cash": {
+    "outstandingCoins": 90000000,
+    "reserveUsd": 15000,
+    "receivablesUsd": 14000,
+    "networkPaymentDelayDays": 40
+  },
+  "targets": {
+    "minMarginPct": 10,
+    "maxBonusPctOfRevenue": 10,
+    "maxDaysToMinimumPayout": 30,
+    "minReversalsInsideHoldPct": 90
+  }
+}

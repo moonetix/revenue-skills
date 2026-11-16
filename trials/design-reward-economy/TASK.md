@@ -1,0 +1,3 @@
+Coinbarn is paying out more than it earns. Please redo the numbers behind our coins: the coin rate, the share of each offer payout we give users, the sign-up, daily check-in and referral bonuses, the payout minimum and the hold before coins can be cashed out. What we measured and what the owner decided is in `data/owner-notes.md`; don't change the owner's targets.
+
+Write the economy to `config/economy.json`, make sure it holds up, and make the service use exactly those numbers: `config/settings.mjs`, `GET /api/economy`, `GET /api/reward-preview` and the cash-out page at `/` must all agree with the file, and a reward must never be rounded in the user's favour.

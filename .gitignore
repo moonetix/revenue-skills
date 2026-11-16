@@ -3,3 +3,4 @@ _site/
 /money-audit/
 *.log
 .DS_Store
+/trials/.run/
