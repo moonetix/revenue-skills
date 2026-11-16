@@ -98,23 +98,24 @@ Write these tests in the project's own test framework, against a real database o
 
 Then run the app locally with test configuration and probe it. Describe each request in a JSON file as `scripts/probe.mjs` expects (run it without arguments for the format). `referrer.json` reads the referrer's balance, `referrals.json` reads the referrer's list with `"path": "referrals.length"`. `CODE` is the test referrer's code.
 
-`scripts/probe.mjs` is the copy in this skill's folder. Run it by its full path, `node <skill directory>/scripts/probe.mjs`, from the project directory, so that the request files resolve against the project.
+`scripts/probe.mjs` is the copy in this skill's folder. Run the commands below from the project directory, so that the request files resolve against the project. Their first line sets `PROBE` to that copy: replace `<skill directory>` with the folder this `SKILL.md` was read from, such as `.agents/skills/add-referral-program`.
 
 ```bash
+PROBE=<skill directory>/scripts/probe.mjs
 # Three sign-ups with the code and nothing else ({{i}} is 1 to 3). Three are a proof, do not script hundreds.
-node scripts/probe.mjs replay signup.json --times 3 --set-body 'email=ref-probe-{{i}}@example.test' \
+node "$PROBE" replay signup.json --times 3 --set-body 'email=ref-probe-{{i}}@example.test' \
   --set-body ref=$CODE --observe referrer.json --observe referrals.json
 
 # A sign-up that names a referrer directly instead of a code.
-node scripts/probe.mjs send signup.json --set-body email=ref-probe-4@example.test \
+node "$PROBE" send signup.json --set-body email=ref-probe-4@example.test \
   --set-body referrer_id=1 --set-body referred_by=1 --observe referrals.json
 
 # The qualifying event for one of the new accounts: a signed test event, twice and at once.
-node scripts/probe.mjs replay purchase-event.json --times 2 --observe referrer.json
-node scripts/probe.mjs race purchase-event.json --parallel 10 --observe referrer.json
+node "$PROBE" replay purchase-event.json --times 2 --observe referrer.json
+node "$PROBE" race purchase-event.json --parallel 10 --observe referrer.json
 
 # The reversal of that event, twice.
-node scripts/probe.mjs replay refund-event.json --times 2 --observe referrer.json
+node "$PROBE" replay refund-event.json --times 2 --observe referrer.json
 ```
 
 Expected:

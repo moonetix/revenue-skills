@@ -12,6 +12,8 @@ metadata:
 
 This skill produces the endpoint through which another company's server tells the app that money moved: a payment succeeded, a subscription renewed, a user completed an offer. It prevents three failures. A message nobody verified credits an account because it said so. A genuine message credits twice because it was delivered twice. A genuine message credits the wrong thing because the handler believed its content instead of the app's own records.
 
+**Which of the three skills.** Use this one for payment webhooks and app store notifications, and for any other signed event that grants something. For a whole offerwall (the wall link, the postback, its reversals and the hold), use `add-offerwall`, which builds its postback by the same rules. To take credits back on refunds, chargebacks and reversed conversions, use `handle-refunds-and-reversals` after this one.
+
 ## Before writing code
 
 Read the project first. Do not ask the user what the code can tell you.
@@ -112,9 +114,10 @@ Write these tests in the project's own test framework, against a real database o
 
 Then run the app locally with test configuration and probe it. Copy `assets/sign-test-event.mjs` into the project's test tools. Its `stripe`, `paddle`, `lemonsqueezy` and `revenuecat` modes sign events the way those providers do; otherwise replace the `webhook` and `postback` example formulas with the scheme the endpoint verifies. PayPal, App Store and Google Play events are signed with the provider's private key and cannot be produced locally: use the provider's test send from its reference, and test the handler with the verification stubbed. It prints a request file for `scripts/probe.mjs` (run the probe without arguments for the format). `me.json` reads the balance of the test user who owns the order.
 
-`scripts/probe.mjs` is the copy in this skill's folder. Run it by its full path, `node <skill directory>/scripts/probe.mjs`, from the project directory, so that the request files resolve against the project.
+`scripts/probe.mjs` is the copy in this skill's folder. Run the commands below from the project directory, so that the request files resolve against the project. Their first line sets `PROBE` to that copy: replace `<skill directory>` with the folder this `SKILL.md` was read from, such as `.agents/skills/build-webhook-endpoint`.
 
 ```bash
+PROBE=<skill directory>/scripts/probe.mjs
 export WEBHOOK_TEST_SECRET=whsec_test_not_secret POSTBACK_TEST_KEY=test_postback_key_not_secret
 node sign-test-event.mjs webhook payment.succeeded '{"order_id":"<pending order>","amount_cents":499,"currency":"usd"}' > paid.json
 node sign-test-event.mjs webhook payment.succeeded '{"order_id":"<pending order>","amount_cents":499,"currency":"usd"}' 600 > stale.json
@@ -122,19 +125,19 @@ node sign-test-event.mjs webhook payment.succeeded '{"order_id":"<second pending
 node sign-test-event.mjs postback user_id=<test user> tx=tx-1001 reward=200 status=1 > postback.json
 
 # Before the order is paid, so that a credit would show.
-node scripts/probe.mjs send paid.json --drop-header x-signature --observe me.json
-node scripts/probe.mjs send paid.json --set-body data.amount_cents=1 --observe me.json
-node scripts/probe.mjs send stale.json --observe me.json
-node scripts/probe.mjs send underpaid.json --observe me.json
+node "$PROBE" send paid.json --drop-header x-signature --observe me.json
+node "$PROBE" send paid.json --set-body data.amount_cents=1 --observe me.json
+node "$PROBE" send stale.json --observe me.json
+node "$PROBE" send underpaid.json --observe me.json
 
 # The genuine event, ten times at once, then twice more.
-node scripts/probe.mjs race paid.json --parallel 10 --observe me.json
-node scripts/probe.mjs replay paid.json --times 2 --observe me.json
+node "$PROBE" race paid.json --parallel 10 --observe me.json
+node "$PROBE" replay paid.json --times 2 --observe me.json
 
 # The postback.
-node scripts/probe.mjs send postback.json --drop-query hash --observe me.json
-node scripts/probe.mjs send postback.json --set-query reward=99999 --observe me.json
-node scripts/probe.mjs race postback.json --parallel 10 --observe me.json
+node "$PROBE" send postback.json --drop-query hash --observe me.json
+node "$PROBE" send postback.json --set-query reward=99999 --observe me.json
+node "$PROBE" race postback.json --parallel 10 --observe me.json
 ```
 
 With a provider mode, the same probes apply to the provider's event shape. A Paddle event must be sent within five seconds of signing, because that is the SDK tolerance; `EVENT_ID=<id>` signs the same event again with a fresh timestamp.

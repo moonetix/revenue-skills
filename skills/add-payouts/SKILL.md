@@ -100,21 +100,22 @@ Write these tests in the project's own test framework, against a real database o
 
 Then run the app locally with test configuration and the stand-in provider, and probe it. Never point a test at a real payout API. Describe each request in a JSON file as `scripts/probe.mjs` expects (run it without arguments for the format). `me.json` reads the test user's balance, `payouts.json` reads the payout list with `"path": "payouts.length"`.
 
-`scripts/probe.mjs` is the copy in this skill's folder. Run it by its full path, `node <skill directory>/scripts/probe.mjs`, from the project directory, so that the request files resolve against the project.
+`scripts/probe.mjs` is the copy in this skill's folder. Run the commands below from the project directory, so that the request files resolve against the project. Their first line sets `PROBE` to that copy: replace `<skill directory>` with the folder this `SKILL.md` was read from, such as `.agents/skills/add-payouts`.
 
 ```bash
+PROBE=<skill directory>/scripts/probe.mjs
 # Amounts that must be refused.
-node scripts/probe.mjs send payout.json --set-body amount=1 --observe me.json
-node scripts/probe.mjs send payout.json --set-body amount=-500 --observe me.json
+node "$PROBE" send payout.json --set-body amount=1 --observe me.json
+node "$PROBE" send payout.json --set-body amount=-500 --observe me.json
 
 # A double click: the same idempotency key, five times at once.
-node scripts/probe.mjs race payout.json --parallel 5 --observe me.json --observe payouts.json
+node "$PROBE" race payout.json --parallel 5 --observe me.json --observe payouts.json
 
 # The daily limit: four requests in a row, each with its own key ({{i}} is 1 to 4).
-node scripts/probe.mjs replay payout.json --times 4 --set-header idempotency-key=probe-cap-{{i}} --observe me.json
+node "$PROBE" replay payout.json --times 4 --set-header idempotency-key=probe-cap-{{i}} --observe me.json
 
 # A fresh account, credited a moment ago through a verified test event.
-node scripts/probe.mjs send payout.json --set-header "authorization=Bearer $FRESH_ACCOUNT_TOKEN" --observe me.json
+node "$PROBE" send payout.json --set-header "authorization=Bearer $FRESH_ACCOUNT_TOKEN" --observe me.json
 ```
 
 Expected:

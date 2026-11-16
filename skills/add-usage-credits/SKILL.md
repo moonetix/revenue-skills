@@ -101,21 +101,22 @@ Write these tests in the project's own test framework, against a real database o
 
 Then run the app locally with test configuration and probe it. Describe each request in a JSON file as `scripts/probe.mjs` expects (run it without arguments for the format). `credits.json` reads the test account's credits endpoint with `"path": "available"`.
 
-`scripts/probe.mjs` is the copy in this skill's folder. Run it by its full path, `node <skill directory>/scripts/probe.mjs`, from the project directory, so that the request files resolve against the project.
+`scripts/probe.mjs` is the copy in this skill's folder. Run the commands below from the project directory, so that the request files resolve against the project. Their first line sets `PROBE` to that copy: replace `<skill directory>` with the folder this `SKILL.md` was read from, such as `.agents/skills/add-usage-credits`.
 
 ```bash
+PROBE=<skill directory>/scripts/probe.mjs
 # A retried request: the same idempotency key, in sequence and at the same moment.
-node scripts/probe.mjs replay generate.json --times 3 --observe credits.json
-node scripts/probe.mjs race generate.json --parallel 10 --observe credits.json
+node "$PROBE" replay generate.json --times 3 --observe credits.json
+node "$PROBE" race generate.json --parallel 10 --observe credits.json
 
 # The client names its own price.
-node scripts/probe.mjs send export.json --set-body cost=0 --set-body credits=0 --observe credits.json
+node "$PROBE" send export.json --set-body cost=0 --set-body credits=0 --observe credits.json
 
 # The purchase event, delivered twice.
-node scripts/probe.mjs replay purchase-event.json --times 2 --observe credits.json
+node "$PROBE" replay purchase-event.json --times 2 --observe credits.json
 
 # An account with fewer credits than the bound.
-node scripts/probe.mjs send generate.json --set-header "authorization=Bearer $EMPTY_ACCOUNT_TOKEN" --observe credits.json
+node "$PROBE" send generate.json --set-header "authorization=Bearer $EMPTY_ACCOUNT_TOKEN" --observe credits.json
 ```
 
 Expected:

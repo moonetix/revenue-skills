@@ -12,7 +12,6 @@ Read this first:
 
 | Network | User id | Transaction id | Reward (your currency) | Payout to you | Status |
 | --- | --- | --- | --- | --- | --- |
-| Moonetix | `{user_id}` | `{transaction_id}` | `{reward}` | `{payout}` | `{status}` |
 | AdBreak Media | `[YOUR_USER_ID]` | `[TXID]` | `[REWARD_VALUE]` | `[PAYOUT]` | `[STATUS]` |
 | AdGate Media | `{s1}` | `{conversion_id}` | `{points}` | `{payout}` | `{state}` |
 | AdGem | `{player_id}` | `{transaction_id}` | `{amount}` | `{payout}` | n/d |
@@ -29,6 +28,7 @@ Read this first:
 | Lootably | `{userID}` | `{transactionID}` | `{currencyReward}` | `{revenue}` | `{status}` |
 | MM Wall | `{user_id}` | `{transaction_id}` | `{amount}` | `{payout}` | n/d |
 | Monlix | `{{userId}}` | `{{transactionId}}` | `{{rewardValue}}` | `{{payout}}` | `{{status}}` |
+| Moonetix | `{user_id}` | `{transaction_id}` | `{reward}` | `{payout}` | `{status}` |
 | MyChips (LoyaltyPlay) | `{user_id}` | n/d | `{user_payout_in_vc}` | `{payout}` | n/d |
 | Offery | `subId` | `transId` | `reward` | `payout` | `status` |
 | Playfull | `{uid}` | `{transaction_id}` | `{payout}` | `{payout_usd}` | n/d |
@@ -49,7 +49,6 @@ Read this first:
 
 | Network | Scheme | Signed input | Sent in | Amount covered |
 | --- | --- | --- | --- | --- |
-| Moonetix | HMAC-SHA256 | `transaction_id:user_id:reward:status`, values as they arrive | `{hash}`, lowercase hex | Reward |
 | AdBreak Media | SHA-256, secret appended | user id + offer id + transaction id + secret | `[HASH]` | None |
 | AdGate Media | None documented | | | Nothing |
 | AdGem | HMAC-SHA256 | v2: the full URL without `verifier`. v3: the request body | `verifier` parameter (v2), `Signature` header (v3) | Everything |
@@ -66,6 +65,7 @@ Read this first:
 | Lootably | SHA-256, secret appended | `userID` + `ip` + `revenue` + `currencyReward` + secret | `{hash}` | Reward and payout, not the transaction id |
 | MM Wall | HMAC-SHA1, optional | The entire URL before `&hash=` | `hash`, hex | Everything |
 | Monlix | Shared secret in the URL | Nothing is signed | `{{secretKey}}` | Nothing |
+| Moonetix | HMAC-SHA256 | `transaction_id:user_id:reward:status`, values as they arrive | `{hash}`, lowercase hex | Reward |
 | MyChips (LoyaltyPlay) | HMAC-SHA256, opt-in | The raw query string without the signature, pairs sorted | `{signature}`, lowercase hex | Everything |
 | Offery | MD5, secret appended | `subId` + `transId` + `reward` + secret | `signature` | Reward |
 | Playfull | SHA-1, key appended | All parameters except `hash_key`, sorted by name, joined as a query string, then the key | `{hash_key}` | Everything |
@@ -86,7 +86,6 @@ Where the amount is not covered, or nothing is signed, the amount in the request
 
 | Network | Reversal signal | Expected answer | Sender addresses |
 | --- | --- | --- | --- |
-| Moonetix | `status=2`, the same transaction id, the same positive reward and payout | Any 2xx within 6 seconds. Redirects are not followed. Up to 5 retries | Published |
 | AdBreak Media | Status `rejected`, same transaction id, amounts stay absolute | 200. The body must not contain `fail` or `error` | Published |
 | AdGate Media | Sent only when `{state}` is in the URL | 200 | Published |
 | AdGem | n/d | Any 2xx | On request |
@@ -103,6 +102,7 @@ Where the amount is not covered, or nothing is signed, the amount in the request
 | Lootably | `status=0`, though the documentation says only status 1 is sent today | The body `1` | n/d |
 | MM Wall | n/d | 200 | Published |
 | Monlix | `{{status}}` of 2 | n/d | n/d |
+| Moonetix | `status=2`, the same transaction id, the same positive reward and payout | Any 2xx within 6 seconds. Redirects are not followed. Up to 5 retries | Published |
 | MyChips (LoyaltyPlay) | A separate deduction postback URL, payout as a positive value | n/d | Published |
 | Offery | `status=2`, amounts stay absolute | The body `ok` | n/d |
 | Playfull | n/d | n/d | Given during onboarding |

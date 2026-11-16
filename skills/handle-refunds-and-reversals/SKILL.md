@@ -12,6 +12,8 @@ metadata:
 
 This skill produces the code that follows money when it goes back: a refund, a chargeback, a conversion a network takes back. Each reversal is computed from the credit it undoes, applied once, and followed through to everything that credit caused. It prevents the loop in which a user buys, spends or withdraws, gets the money back and keeps the goods. It also prevents the opposite failures: a reversal that subtracts twice, or from the wrong account.
 
+**Which of the three skills.** Use this one when something already credited must be taken back: a refund, a chargeback, a revocation or a reversed conversion, with everything the credit caused. To receive and verify the event that grants, use `build-webhook-endpoint`. A new offerwall gets its reversal postbacks from `add-offerwall`; this skill fixes reversals in an existing one.
+
 ## Before writing code
 
 Read the project first. Do not ask the user what the code can tell you.
@@ -107,35 +109,36 @@ Write these tests in the project's own test framework, against a real database o
 
 Then run the app locally with test configuration and probe it with `scripts/probe.mjs` (run it without arguments for the request file format). Create the signed request files with the helper the project's webhook tests use, signed with the local test secret. Each scenario uses its own test order. `me.json` reads the test user's balance. The order grants 500 credits for 499 cents.
 
-`scripts/probe.mjs` is the copy in this skill's folder. Run it by its full path, `node <skill directory>/scripts/probe.mjs`, from the project directory, so that the request files resolve against the project.
+`scripts/probe.mjs` is the copy in this skill's folder. Run the commands below from the project directory, so that the request files resolve against the project. Their first line sets `PROBE` to that copy: replace `<skill directory>` with the folder this `SKILL.md` was read from, such as `.agents/skills/handle-refunds-and-reversals`.
 
 ```bash
+PROBE=<skill directory>/scripts/probe.mjs
 # 1. A full refund, exactly once.
-node scripts/probe.mjs send paid-1.json --observe me.json
-node scripts/probe.mjs race refund-1.json --parallel 10 --observe me.json
-node scripts/probe.mjs replay refund-1.json --times 2 --observe me.json
+node "$PROBE" send paid-1.json --observe me.json
+node "$PROBE" race refund-1.json --parallel 10 --observe me.json
+node "$PROBE" replay refund-1.json --times 2 --observe me.json
 
 # 2. Partial refunds of 166, 166 and 167 cents.
-node scripts/probe.mjs send paid-2.json --observe me.json
-node scripts/probe.mjs send refund-2a.json --observe me.json
-node scripts/probe.mjs send refund-2b.json --observe me.json
-node scripts/probe.mjs send refund-2c.json --observe me.json
+node "$PROBE" send paid-2.json --observe me.json
+node "$PROBE" send refund-2a.json --observe me.json
+node "$PROBE" send refund-2b.json --observe me.json
+node "$PROBE" send refund-2c.json --observe me.json
 
 # 3. A dispute that is won.
-node scripts/probe.mjs send paid-3.json --observe me.json
-node scripts/probe.mjs replay dispute-3-opened.json --times 2 --observe me.json
-node scripts/probe.mjs replay dispute-3-won.json --times 2 --observe me.json
+node "$PROBE" send paid-3.json --observe me.json
+node "$PROBE" replay dispute-3-opened.json --times 2 --observe me.json
+node "$PROBE" replay dispute-3-won.json --times 2 --observe me.json
 
 # 4. A reversal postback before its credit, for a transaction id never seen.
-node scripts/probe.mjs send reversal-4.json --observe me.json
-node scripts/probe.mjs send credit-4.json --observe me.json
+node "$PROBE" send reversal-4.json --observe me.json
+node "$PROBE" send credit-4.json --observe me.json
 
 # 5. A spent balance. Use a fresh test user.
-node scripts/probe.mjs send paid-5.json --observe me.json
-node scripts/probe.mjs send spend.json --var TOKEN=$TOKEN --observe me.json
-node scripts/probe.mjs send refund-5.json --observe me.json
-node scripts/probe.mjs send spend.json --var TOKEN=$TOKEN --observe me.json
-node scripts/probe.mjs send payout.json --var TOKEN=$TOKEN --observe me.json
+node "$PROBE" send paid-5.json --observe me.json
+node "$PROBE" send spend.json --var TOKEN=$TOKEN --observe me.json
+node "$PROBE" send refund-5.json --observe me.json
+node "$PROBE" send spend.json --var TOKEN=$TOKEN --observe me.json
+node "$PROBE" send payout.json --var TOKEN=$TOKEN --observe me.json
 ```
 
 Expected:

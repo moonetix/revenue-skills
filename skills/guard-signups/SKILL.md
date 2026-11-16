@@ -88,18 +88,19 @@ Write these tests in the project's test framework:
 - One account redeeming a code twice gets it once. A code capped at N is redeemed N times across N + 1 accounts.
 - A second trial is refused for the same normalized email with a new account, and for a new email with the same card fingerprint.
 
-Then run the app locally with test configuration and probe it. In the local configuration, list `127.0.0.1` as a trusted proxy so the probe can present a client address. `signup.json`, `promo.json` and `me.json` are request files as described by `node scripts/probe.mjs` with no arguments; `me.json` reads the balance of the account that `promo.json` signs in as.
+Then run the app locally with test configuration and probe it. In the local configuration, list `127.0.0.1` as a trusted proxy so the probe can present a client address. `signup.json`, `promo.json` and `me.json` are request files as described by `node "$PROBE"` with no arguments; `me.json` reads the balance of the account that `promo.json` signs in as.
 
-`scripts/probe.mjs` is the copy in this skill's folder. Run it by its full path, `node <skill directory>/scripts/probe.mjs`, from the project directory, so that the request files resolve against the project.
+`scripts/probe.mjs` is the copy in this skill's folder. Run the commands below from the project directory, so that the request files resolve against the project. Their first line sets `PROBE` to that copy: replace `<skill directory>` with the folder this `SKILL.md` was read from, such as `.agents/skills/guard-signups`.
 
 ```bash
-node scripts/probe.mjs send signup.json --set-body email=jane.doe@gmail.com
-node scripts/probe.mjs send signup.json --set-body email=janedoe+1@gmail.com
-node scripts/probe.mjs send signup.json --set-body email=x@mailinator.com
-node scripts/probe.mjs send signup.json --set-body email=pat@example.org --set-header x-forwarded-for=<address in a datacenter range>
-node scripts/probe.mjs replay signup.json --times 8 --set-body email=repeat@example.org --set-header x-forwarded-for=203.0.113.9
-node scripts/probe.mjs replay promo.json --times 3 --observe me.json
-node scripts/probe.mjs race promo.json --parallel 10 --observe me.json
+PROBE=<skill directory>/scripts/probe.mjs
+node "$PROBE" send signup.json --set-body email=jane.doe@gmail.com
+node "$PROBE" send signup.json --set-body email=janedoe+1@gmail.com
+node "$PROBE" send signup.json --set-body email=x@mailinator.com
+node "$PROBE" send signup.json --set-body email=pat@example.org --set-header x-forwarded-for=<address in a datacenter range>
+node "$PROBE" replay signup.json --times 8 --set-body email=repeat@example.org --set-header x-forwarded-for=203.0.113.9
+node "$PROBE" replay promo.json --times 3 --observe me.json
+node "$PROBE" race promo.json --parallel 10 --observe me.json
 ```
 
 Expected, in order: the first answers 2xx; the second answers 4xx as a duplicate; the third answers 4xx with a hint; the fourth answers 2xx and the new account's balance is zero with the bonus held; in the fifth the first attempt answers 2xx, the next ones answer 4xx as duplicates, and the last ones answer 4xx with the too-many-attempts hint; in the sixth one request answers 2xx, two answer 4xx, and the balance rises by one redemption; the last, on a fresh account, shows one 2xx, nine 4xx and a balance that rises by one redemption.

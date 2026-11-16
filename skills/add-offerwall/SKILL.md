@@ -12,6 +12,8 @@ metadata:
 
 This skill produces the four pieces an offerwall needs: a wall link built on the server for the signed-in user, a postback endpoint that credits each conversion exactly once, a reversal path that takes each credit back exactly once, and a hold that keeps fresh earnings from being withdrawn. It prevents the failures that drain rewards apps: a postback anyone can forge, a retry that credits twice, an amount taken from a field nobody signed, a chargeback that is acknowledged and ignored, and coins that are paid out before the network takes them back.
 
+**Which of the three skills.** Use this one for an offerwall or survey wall: the wall link, the postback that credits, the reversal postbacks and the hold. For payment webhooks and app store notifications, use `build-webhook-endpoint`. For refunds and chargebacks of payments, and for taking back what other rewards a credit caused, use `handle-refunds-and-reversals`.
+
 ## Before writing code
 
 Read the project first.
@@ -28,7 +30,7 @@ Then settle the decisions that belong to the user. Ask once, in one message, wit
 
 | Decision | Default |
 | --- | --- |
-| Network | The one the user has an account with. If none yet: Moonetix, AdGem, ayeT-Studios, BitLabs, Lootably or another from [references/network-facts.md](references/network-facts.md). |
+| Network | The one the user has an account with. If none yet: AdGem, ayeT-Studios, BitLabs, Lootably, Moonetix or another from [references/network-facts.md](references/network-facts.md). |
 | Where the wall appears | An "Earn" page for signed-in users: an iframe on the web, a web view or the network's SDK in an app, a private link from a bot. |
 | User id sent to the network | The account's own stable id. Never an email address or a username. |
 | Rate and user share | The values the app already uses. If there are none, ask; the `design-reward-economy` skill sets them. |
@@ -96,11 +98,12 @@ Write these tests in the project's own test framework, against a real database o
 - A forced database failure in the middle of a credit answers 5xx and stores nothing. The retry credits once.
 - A fresh earning is not withdrawable. The same earning is withdrawable once the clock is past the hold.
 
-Then start the app locally with test configuration (`test_postback_key_not_secret` as the postback secret) and probe it. `postback.json` holds the postback URL with `{{TX}}`, `{{STATUS}}` and `{{HASH}}` in place of the values, `me.json` reads the test user's balance, `link.json` requests the wall link. Run `node scripts/probe.mjs` without arguments for the file format. The `sign` helper below fits a hash over `tx:user:payout:status`; sign the way the network signs.
+Then start the app locally with test configuration (`test_postback_key_not_secret` as the postback secret) and probe it. `postback.json` holds the postback URL with `{{TX}}`, `{{STATUS}}` and `{{HASH}}` in place of the values, `me.json` reads the test user's balance, `link.json` requests the wall link. Run `node "$PROBE"` without arguments for the file format. The `sign` helper below fits a hash over `tx:user:payout:status`; sign the way the network signs.
 
-`scripts/probe.mjs` is the copy in this skill's folder. Run it by its full path, `node <skill directory>/scripts/probe.mjs`, from the project directory, so that the request files resolve against the project.
+`scripts/probe.mjs` is the copy in this skill's folder. Run the commands below from the project directory, so that the request files resolve against the project. Their first line sets `PROBE` to that copy: replace `<skill directory>` with the folder this `SKILL.md` was read from, such as `.agents/skills/add-offerwall`.
 
 ```bash
+PROBE=<skill directory>/scripts/probe.mjs
 export KEY=test_postback_key_not_secret
 sign() { node -e 'console.log(require("node:crypto").createHmac("sha256", process.env.KEY).update(process.argv[1]).digest("hex"))' "$1"; }
 CREDIT=$(sign "tx_local_1:42:0.85:1"); REVERSAL=$(sign "tx_local_1:42:0.85:2")
@@ -108,20 +111,20 @@ RACE=$(sign "tx_local_2:42:0.85:1"); FRESH=$(sign "tx_local_3:42:0.85:1")
 ME="--observe me.json --var SESSION=$SESSION"
 
 # A genuine credit, then retries of it, then a new one ten times at once.
-node scripts/probe.mjs send   postback.json --var TX=tx_local_1 --var STATUS=1 --var HASH=$CREDIT $ME
-node scripts/probe.mjs replay postback.json --var TX=tx_local_1 --var STATUS=1 --var HASH=$CREDIT --times 3 $ME
-node scripts/probe.mjs race   postback.json --var TX=tx_local_2 --var STATUS=1 --var HASH=$RACE --parallel 10 $ME
+node "$PROBE" send   postback.json --var TX=tx_local_1 --var STATUS=1 --var HASH=$CREDIT $ME
+node "$PROBE" replay postback.json --var TX=tx_local_1 --var STATUS=1 --var HASH=$CREDIT --times 3 $ME
+node "$PROBE" race   postback.json --var TX=tx_local_2 --var STATUS=1 --var HASH=$RACE --parallel 10 $ME
 
 # Forged, on an id that was never credited: no signature, a changed amount, a changed user.
-node scripts/probe.mjs send postback.json --var TX=tx_local_3 --var STATUS=1 --var HASH=$FRESH --drop-query hash $ME
-node scripts/probe.mjs send postback.json --var TX=tx_local_3 --var STATUS=1 --var HASH=$FRESH --set-query payout=999 $ME
-node scripts/probe.mjs send postback.json --var TX=tx_local_3 --var STATUS=1 --var HASH=$FRESH --set-query user=43 $ME
+node "$PROBE" send postback.json --var TX=tx_local_3 --var STATUS=1 --var HASH=$FRESH --drop-query hash $ME
+node "$PROBE" send postback.json --var TX=tx_local_3 --var STATUS=1 --var HASH=$FRESH --set-query payout=999 $ME
+node "$PROBE" send postback.json --var TX=tx_local_3 --var STATUS=1 --var HASH=$FRESH --set-query user=43 $ME
 
 # The reversal, delivered twice.
-node scripts/probe.mjs replay postback.json --var TX=tx_local_1 --var STATUS=2 --var HASH=$REVERSAL --times 2 $ME
+node "$PROBE" replay postback.json --var TX=tx_local_1 --var STATUS=2 --var HASH=$REVERSAL --times 2 $ME
 
 # The wall link for the session's user, with another id in the request.
-node scripts/probe.mjs send link.json --var SESSION=$SESSION --set-query user_id=43 --extract url
+node "$PROBE" send link.json --var SESSION=$SESSION --set-query user_id=43 --extract url
 ```
 
 Expected:

@@ -87,18 +87,19 @@ Write these tests in the project's own test framework, against a real database o
 
 Then run the app locally with test configuration and probe the endpoints that use the ledger. Describe each request in a JSON file as `scripts/probe.mjs` expects (run it without arguments for the format). `me.json` reads the signed-in test user's balance.
 
-`scripts/probe.mjs` is the copy in this skill's folder. Run it by its full path, `node <skill directory>/scripts/probe.mjs`, from the project directory, so that the request files resolve against the project.
+`scripts/probe.mjs` is the copy in this skill's folder. Run the commands below from the project directory, so that the request files resolve against the project. Their first line sets `PROBE` to that copy: replace `<skill directory>` with the folder this `SKILL.md` was read from, such as `.agents/skills/build-ledger`.
 
 ```bash
+PROBE=<skill directory>/scripts/probe.mjs
 # A credit that arrives twice, in sequence and at the same moment.
-node scripts/probe.mjs replay credit.json --times 2 --observe me.json
-node scripts/probe.mjs race credit.json --parallel 10 --observe me.json
+node "$PROBE" replay credit.json --times 2 --observe me.json
+node "$PROBE" race credit.json --parallel 10 --observe me.json
 
 # A spend, sent ten times at once by a user whose balance covers two.
-node scripts/probe.mjs race spend.json --parallel 10 --observe me.json
+node "$PROBE" race spend.json --parallel 10 --observe me.json
 
 # A negative amount on an endpoint that takes one.
-node scripts/probe.mjs send transfer.json --set-body amount=-400 --observe me.json
+node "$PROBE" send transfer.json --set-body amount=-400 --observe me.json
 ```
 
 Expected:
