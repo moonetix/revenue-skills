@@ -20,7 +20,7 @@ Notes that keep this table honest:
 
 - Check each provider's current help pages before adding or changing a row. The table reflects what the providers documented in November 2026.
 - Custom domains hosted by Google keep their dots. The Gmail rules apply to the two Gmail domains only.
-- Outlook.com, iCloud and Yahoo are lowercased only. Microsoft documents plus addressing for organizations on Exchange Online, not for consumer accounts; Yahoo's disposable addresses do not contain the account name. If the user wants plus tags removed for more domains, make it a list in configuration (`plusTagDomains` below), not a blanket rule.
+- Outlook.com, iCloud and Yahoo are lowercased only. Microsoft documents plus addressing for organizations on Exchange Online, not for consumer accounts. Third-party guides say consumer Outlook.com delivers plus-tagged mail as well, so the sources conflict: keep the tag by default, and if the sign-up data shows `+` variants farming one outlook.com or hotmail.com mailbox, add those domains to `plusTagDomains`. Yahoo's disposable addresses do not contain the account name. If the user wants plus tags removed for more domains, make it a list in configuration (`plusTagDomains` below), not a blanket rule.
 - A domain with a catch-all mailbox yields unlimited addresses that no normalization can merge. Verification and velocity handle those, and so can a count of sign-ups per email domain for domains outside the large public providers.
 
 Node:
