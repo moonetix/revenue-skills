@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.3.3] - 2026-11-16
+
+### Fixed
+
+- The `money-audit` description had an unquoted ": " in its frontmatter, which strict YAML parsers reject, so agents that parse SKILL.md strictly could not load the skill. The description is reworded, and `npm run validate` now rejects any unquoted frontmatter value with ": " or " #", with a test.
+
 ## [1.3.2] - 2026-11-16
 
 ### Added
@@ -126,7 +132,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - One exploit per planted bug, run in CI against both versions of the app.
 - Plugin manifests for Claude Code and Codex, and `evals/evals.json` for every skill.
 
-[Unreleased]: https://github.com/moonetix/revenue-skills/compare/v1.3.2...HEAD
+[Unreleased]: https://github.com/moonetix/revenue-skills/compare/v1.3.3...HEAD
+[1.3.3]: https://github.com/moonetix/revenue-skills/compare/v1.3.2...v1.3.3
 [1.3.2]: https://github.com/moonetix/revenue-skills/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/moonetix/revenue-skills/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/moonetix/revenue-skills/compare/v1.2.0...v1.3.0
