@@ -1,18 +1,18 @@
 ---
 name: money-audit
-description: Audit the code paths where an app handles money, credits, points or rewards, and report the bugs that lose money, each with the exact file and line and a reproducible proof. Use when the user asks to audit, review or pen-test payments, payment webhooks, postbacks, balances, wallets, credits, coupons, referrals, refunds or payouts, asks whether users can cheat or farm the system, or is about to launch something that charges or pays out. Also use to check one money-handling change before it ships.
+description: Audit the code paths where an app handles money, credits, points or rewards, and report the bugs that lose money, each with the exact file and line, the quoted code, and a proof: a request, a test or a code trace. Use when the user asks to audit, review or pen-test payments, payment webhooks, postbacks, balances, wallets, credits, coupons, referrals, refunds or payouts, asks whether users can cheat or farm the system, or is about to launch something that charges or pays out. Also use to check one money-handling change before it ships.
 license: MIT
 compatibility: The bundled scripts need Node 20 or newer. Probes are sent only to an app running on the local machine.
 metadata:
   author: moonetix
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Money audit
 
 Find the bugs that let someone create, take or keep value they did not pay for or earn: a webhook nobody verifies, a credit that lands twice, a balance two requests can spend at once, a refund that leaves the goods behind. This is a source-first review of business logic. It is not a general security scan.
 
-A finding counts only when it names the file and line, quotes the code that is there, and comes with a proof someone else can repeat. A bundled script rejects anything less.
+A finding counts only when it names the file and line, quotes the code that is there, and carries a proof: a request or a test someone else can rerun, or a step by step code trace. A bundled script rejects a finding whose quote is not at that file and line, or whose proof is missing.
 
 ## Two ways to use this skill
 
@@ -62,6 +62,7 @@ When a flaw fits two classes, file it where its fix lives:
 | A signing secret with a working default, or one a client can read | `secrets-and-access`. A check that can be skipped at request time goes under `unverified-events`. |
 | An account chosen by the request instead of the session | `secrets-and-access` |
 | A reversal that repeats | `refunds-and-reversals`. A credit that repeats goes under `duplicate-credit`. |
+| A manual balance change that records no actor or reason | `ledger-and-audit-trail`. An adjustment route an ordinary user can reach goes under `secrets-and-access`. |
 
 For each class end with one of three results: at least one candidate finding, **clear** (with the files read and the guard that makes it safe), or **not applicable** (the app has no such feature).
 
@@ -98,9 +99,13 @@ Then tell the user, in order of money at risk: what was found, how it was proved
 | critical | Anyone, or any signed-in user, can create or take value at will, and can repeat it. |
 | high | The loss is real but needs a condition: a valid partner key, good timing, an existing balance. Or the loss per attempt is capped. |
 | medium | Loss happens only in unusual conditions, or a missing control turns another flaw into a loss. |
-| low | Nothing is lost today, but an incident could not be investigated or undone. |
+| low | Nothing is lost today and nothing else becomes easier to exploit: a timing-unsafe comparison alone, a missing reconciliation job. |
+
+Missing or untrustworthy records, including manual balance changes that do not say who made them, take their level from the rule in [ledger-and-audit-trail.md](references/ledger-and-audit-trail.md#severity), not from this table.
 
 Rate each finding by what it allows by itself. When one finding makes another easier to reach (an unsigned webhook turns a retry-only duplicate into something anyone can trigger), keep both ratings and name the chain in the impact of each.
+
+When the loss depends on how the code is deployed (the database engine or store, the number of workers, timestamps the caller supplies), rate the setups the project ships, documents or uses in its examples, and name the condition in the impact. A setup the documentation warns against does not raise the rating.
 
 A code trace alone can support any level, but the validator warns when a critical or high finding was never run. Run it if the app can be started. Ledger findings are the exception: a missing record is shown by the code, not by a request.
 

@@ -5,7 +5,7 @@ license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Add a referral program
@@ -98,12 +98,12 @@ Write these tests in the project's own test framework, against a real database o
 
 Then run the app locally with test configuration and probe it. Describe each request in a JSON file as `scripts/probe.mjs` expects (run it without arguments for the format). `referrer.json` reads the referrer's balance, `referrals.json` reads the referrer's list with `"path": "referrals.length"`. `CODE` is the test referrer's code.
 
+`scripts/probe.mjs` is the copy in this skill's folder. Run it by its full path, `node <skill directory>/scripts/probe.mjs`, from the project directory, so that the request files resolve against the project.
+
 ```bash
-# Three sign-ups with the code and nothing else. Three are a proof, do not script hundreds.
-for i in 1 2 3; do
-  node scripts/probe.mjs send signup.json --set-body email=ref-probe-$i@example.test \
-    --set-body ref=$CODE --observe referrer.json --observe referrals.json
-done
+# Three sign-ups with the code and nothing else ({{i}} is 1 to 3). Three are a proof, do not script hundreds.
+node scripts/probe.mjs replay signup.json --times 3 --set-body 'email=ref-probe-{{i}}@example.test' \
+  --set-body ref=$CODE --observe referrer.json --observe referrals.json
 
 # A sign-up that names a referrer directly instead of a code.
 node scripts/probe.mjs send signup.json --set-body email=ref-probe-4@example.test \
@@ -119,7 +119,7 @@ node scripts/probe.mjs replay refund-event.json --times 2 --observe referrer.jso
 
 Expected:
 
-- The three sign-ups: each answers 2xx, the list grows by one each time, and the balance does not move.
+- The three sign-ups: each answers 2xx, the list grows by three, and the balance does not move.
 - The direct referrer id: the account is created, and the list does not grow.
 - The qualifying event: every delivery answers 2xx. With the hold set to zero in test configuration, the balance rises by one reward in total. With a hold, the balance does not move and the referral shows as qualified with a date.
 - The reversal: both deliveries answer 2xx. The balance falls by one reward in total, or the referral returns to waiting if the reward was not posted yet.

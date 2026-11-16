@@ -5,7 +5,7 @@ license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Build a webhook endpoint
@@ -99,6 +99,8 @@ Write these tests in the project's own test framework, against a real database o
 - For a postback: a changed parameter with the old hash, a missing hash, and a parameter sent as an array are refused. The same transaction id credits once.
 
 Then run the app locally with test configuration and probe it. Copy `assets/sign-test-event.mjs` into the project's test tools and replace its two example formulas with the scheme the endpoint verifies. It prints a request file for `scripts/probe.mjs` (run the probe without arguments for the format). `me.json` reads the balance of the test user who owns the order.
+
+`scripts/probe.mjs` is the copy in this skill's folder. Run it by its full path, `node <skill directory>/scripts/probe.mjs`, from the project directory, so that the request files resolve against the project.
 
 ```bash
 export WEBHOOK_TEST_SECRET=whsec_test_not_secret POSTBACK_TEST_KEY=test_postback_key_not_secret

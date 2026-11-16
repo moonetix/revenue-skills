@@ -5,7 +5,7 @@ license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Add usage credits
@@ -96,6 +96,8 @@ Write these tests in the project's own test framework, against a real database o
 - After every test, both reconcile queries return no rows.
 
 Then run the app locally with test configuration and probe it. Describe each request in a JSON file as `scripts/probe.mjs` expects (run it without arguments for the format). `credits.json` reads the test account's credits endpoint with `"path": "available"`.
+
+`scripts/probe.mjs` is the copy in this skill's folder. Run it by its full path, `node <skill directory>/scripts/probe.mjs`, from the project directory, so that the request files resolve against the project.
 
 ```bash
 # A retried request: the same idempotency key, in sequence and at the same moment.

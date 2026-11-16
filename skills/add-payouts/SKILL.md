@@ -5,7 +5,7 @@ license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Add payouts
@@ -100,6 +100,8 @@ Write these tests in the project's own test framework, against a real database o
 
 Then run the app locally with test configuration and the stand-in provider, and probe it. Never point a test at a real payout API. Describe each request in a JSON file as `scripts/probe.mjs` expects (run it without arguments for the format). `me.json` reads the test user's balance, `payouts.json` reads the payout list with `"path": "payouts.length"`.
 
+`scripts/probe.mjs` is the copy in this skill's folder. Run it by its full path, `node <skill directory>/scripts/probe.mjs`, from the project directory, so that the request files resolve against the project.
+
 ```bash
 # Amounts that must be refused.
 node scripts/probe.mjs send payout.json --set-body amount=1 --observe me.json
@@ -108,10 +110,8 @@ node scripts/probe.mjs send payout.json --set-body amount=-500 --observe me.json
 # A double click: the same idempotency key, five times at once.
 node scripts/probe.mjs race payout.json --parallel 5 --observe me.json --observe payouts.json
 
-# The daily limit: separate requests, each with its own key.
-for i in 1 2 3 4; do
-  node scripts/probe.mjs send payout.json --set-header idempotency-key=probe-cap-$i --observe me.json
-done
+# The daily limit: four requests in a row, each with its own key ({{i}} is 1 to 4).
+node scripts/probe.mjs replay payout.json --times 4 --set-header idempotency-key=probe-cap-{{i}} --observe me.json
 
 # A fresh account, credited a moment ago through a verified test event.
 node scripts/probe.mjs send payout.json --set-header "authorization=Bearer $FRESH_ACCOUNT_TOKEN" --observe me.json
@@ -121,7 +121,7 @@ Expected:
 
 - The two bad amounts: a 4xx each, and the balance does not move.
 - The race: every request answers with the same payout id, the balance falls by one amount, and the list grows by one.
-- The daily limit: with the default of three requests a day, the fourth is refused with a 4xx and the balance falls three times.
+- The daily limit: with the default of three requests a day, the fourth is refused with a 4xx and the balance falls by three amounts.
 - The fresh account: refused because nothing has matured, and the balance does not move.
 - With the stand-in provider set to time out, a request leaves the payout `sending` and the balance lowered. Run the resolver command: the payout becomes `paid` or `failed` according to what the stand-in reports, and a failure raises the balance once.
 

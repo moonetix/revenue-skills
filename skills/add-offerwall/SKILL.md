@@ -5,7 +5,7 @@ license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Add an offerwall
@@ -97,6 +97,8 @@ Write these tests in the project's own test framework, against a real database o
 - A fresh earning is not withdrawable. The same earning is withdrawable once the clock is past the hold.
 
 Then start the app locally with test configuration (`test_postback_key_not_secret` as the postback secret) and probe it. `postback.json` holds the postback URL with `{{TX}}`, `{{STATUS}}` and `{{HASH}}` in place of the values, `me.json` reads the test user's balance, `link.json` requests the wall link. Run `node scripts/probe.mjs` without arguments for the file format. The `sign` helper below fits a hash over `tx:user:payout:status`; sign the way the network signs.
+
+`scripts/probe.mjs` is the copy in this skill's folder. Run it by its full path, `node <skill directory>/scripts/probe.mjs`, from the project directory, so that the request files resolve against the project.
 
 ```bash
 export KEY=test_postback_key_not_secret

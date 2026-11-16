@@ -5,7 +5,7 @@ license: MIT
 compatibility: Needs Node 20 or newer to run the bundled economy check script.
 metadata:
   author: moonetix
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Design a reward economy
@@ -99,7 +99,7 @@ Write these tests in the project's own test framework:
 - An earning younger than the hold is not withdrawable, and one older than the hold is.
 - The economy file passes: the test imports `checkEconomy` from the script or runs it and asserts on the exit code.
 
-Then run the check by hand, on the plan and on a worst case:
+Then run the check by hand, on the plan and on a worst case. `scripts/economy-check.mjs` is in this skill's folder: run it by its full path, `node <skill directory>/scripts/economy-check.mjs`, from the project directory.
 
 ```bash
 node scripts/economy-check.mjs config/economy.json            # exit code 0

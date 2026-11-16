@@ -5,7 +5,7 @@ license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Handle refunds and reversals
@@ -106,6 +106,8 @@ Write these tests in the project's own test framework, against a real database o
 - After every test, the ledger's reconciliation query returns no rows.
 
 Then run the app locally with test configuration and probe it with `scripts/probe.mjs` (run it without arguments for the request file format). Create the signed request files with the helper the project's webhook tests use, signed with the local test secret. Each scenario uses its own test order. `me.json` reads the test user's balance. The order grants 500 credits for 499 cents.
+
+`scripts/probe.mjs` is the copy in this skill's folder. Run it by its full path, `node <skill directory>/scripts/probe.mjs`, from the project directory, so that the request files resolve against the project.
 
 ```bash
 # 1. A full refund, exactly once.

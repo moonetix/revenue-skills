@@ -5,7 +5,7 @@ license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Guard sign-ups
@@ -89,6 +89,8 @@ Write these tests in the project's test framework:
 - A second trial is refused for the same normalized email with a new account, and for a new email with the same card fingerprint.
 
 Then run the app locally with test configuration and probe it. In the local configuration, list `127.0.0.1` as a trusted proxy so the probe can present a client address. `signup.json`, `promo.json` and `me.json` are request files as described by `node scripts/probe.mjs` with no arguments; `me.json` reads the balance of the account that `promo.json` signs in as.
+
+`scripts/probe.mjs` is the copy in this skill's folder. Run it by its full path, `node <skill directory>/scripts/probe.mjs`, from the project directory, so that the request files resolve against the project.
 
 ```bash
 node scripts/probe.mjs send signup.json --set-body email=jane.doe@gmail.com
