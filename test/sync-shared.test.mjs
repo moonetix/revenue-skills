@@ -19,6 +19,7 @@ const sync = (...args) => spawnSync(process.execPath, [path.join(copy, 'scripts'
 const shared = [
   ['scripts/probe.mjs', 'money-audit'],
   ['references/webhook-stacks.md', 'build-webhook-endpoint'],
+  ['assets/sign-test-event.mjs', 'build-webhook-endpoint'],
 ];
 
 test('every shared file has its source and at least one copy, and the copies are in sync', () => {

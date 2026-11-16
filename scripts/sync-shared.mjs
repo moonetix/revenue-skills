@@ -13,6 +13,7 @@ const skills = path.join(root, 'skills');
 const SHARED = [
   { file: 'scripts/probe.mjs', source: 'money-audit', mode: 0o755 },
   { file: 'references/webhook-stacks.md', source: 'build-webhook-endpoint', mode: 0o644 },
+  { file: 'assets/sign-test-event.mjs', source: 'build-webhook-endpoint', mode: 0o644 },
 ];
 const check = process.argv.includes('--check');
 

@@ -7,5 +7,6 @@
   "add-referral-program": { "checks": 12, "naive_fails": ["F01", "F02", "F04", "F05", "F06", "F09", "F10", "F11"] },
   "add-usage-credits": { "checks": 10, "naive_fails": ["U02", "U03", "U04", "U05", "U07", "U08", "U09"] },
   "design-reward-economy": { "checks": 8, "naive_fails": ["E01", "E02", "E03", "E04", "E05", "E07", "E08"] },
-  "add-payouts": { "checks": 16, "naive_fails": ["P01", "P02", "P03", "P05", "P06", "P07", "P08", "P09", "P11", "P12", "P13", "P14", "P15"] }
+  "add-payouts": { "checks": 16, "naive_fails": ["P01", "P02", "P03", "P05", "P06", "P07", "P08", "P09", "P11", "P12", "P13", "P14", "P15"] },
+  "add-subscriptions": { "checks": 21, "naive_fails": ["S03", "S05", "S08", "S11", "S12", "S13", "S14", "S18", "S19", "S20"] }
 }
