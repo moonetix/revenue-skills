@@ -118,8 +118,12 @@ test('plugin manifests use only the fields their formats define', () => {
   for (const key of Object.keys(marketplace.metadata)) assert.ok(['description', 'version', 'pluginRoot'].includes(key), `marketplace metadata: ${key}`);
   // Claude Code: https://code.claude.com/docs/en/plugins-reference (fields table).
   const claude = JSON.parse(read('.claude-plugin/plugin.json'));
+  // The directory listing fields are read by Anthropic's plugin directory and ignored by Claude Code at load.
   const claudeFields = ['name', 'displayName', 'version', 'description', 'author', 'homepage', 'repository', 'license', 'keywords'];
-  for (const key of Object.keys(claude)) assert.ok(claudeFields.includes(key), `.claude-plugin/plugin.json: ${key}`);
+  const listingFields = ['icon', 'documentationUrl', 'supportUrl', 'privacyPolicyUrl', 'termsOfServiceUrl'];
+  for (const key of Object.keys(claude)) assert.ok([...claudeFields, ...listingFields].includes(key), `.claude-plugin/plugin.json: ${key}`);
+  assert.ok(existsSync(path.join(root, claude.icon)), 'the icon is in the repository');
+  for (const key of listingFields.filter((k) => k.endsWith('Url') && claude[k])) assert.match(claude[key], /^https:\/\//, key);
   assert.equal(claude.skills, undefined, 'skills/ is scanned by default');
   assert.equal(claude.name, portable.name);
   assert.equal(claude.displayName, 'Revenue Skills');
