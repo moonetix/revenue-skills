@@ -37,7 +37,7 @@ Describe the request in a JSON file:
 }
 ```
 
-`{{TOKEN}}` is filled in from the command line with `--var TOKEN=...`. Keep tokens and keys out of request files this way: the files stay safe to keep, and the probe prints `{{TOKEN}}` instead of the value in its output. Fields named like a token, secret, password or API key in a response are printed as `***`; read one with `--extract`. Keep request files and any signing helper you write under `money-audit/evidence/`.
+`{{TOKEN}}` is filled in from the command line with `--var TOKEN=...`. Keep tokens and keys out of request files this way: the files stay safe to keep, and the probe prints `{{TOKEN}}` instead of the value in its output. Fields named like a token, secret, password or API key in a response are printed as `***`; read one with `--extract`. Keep request files and any signing helper you write under `money-audit/evidence/`. Inside a URL a value is percent-encoded, except at the very start: `"url": "{{BASE}}/api/me"` with `--var BASE=http://127.0.0.1:3000` lets one file serve any port.
 
 Use `"rawBody": "..."` instead of `"body"` when the exact bytes matter, as they do for a signed webhook.
 
@@ -89,6 +89,16 @@ The output is JSON: how many requests were sent, the status codes, sample respon
 ```
 
 Ten purchases succeeded and the balance fell by the price of one. That is the proof.
+
+## What the probe cannot do
+
+The probe sends JSON and plain text over HTTP, and nothing more. When a proof needs one of the following, write a failing test in the project's own framework instead, or a small script under `money-audit/evidence/`:
+
+- **Bodies other than JSON.** `--set-body`, `--drop-body`, `--observe` and `--extract` read JSON only. A form or multipart body can be sent byte for byte as `rawBody`, but not edited.
+- **Sessions kept in cookies.** There is no cookie jar and no form login, and `--extract` cannot read a `Set-Cookie` header. Sign in once by other means, such as `curl -i`, and pass the session cookie as a `cookie` header filled with `--var`. A CSRF token that changes with every page is beyond it.
+- **Requests that differ.** `race` and `replay` send the same request each time, apart from `{{i}}`, which is replaced with the number of each request (1 to N) in the URL, headers and body. Use it to give each request its own idempotency key or account. Anything else that must differ per request, such as a per-request signature, needs a script.
+- **Races the server serializes.** A per-session lock (PHP's file sessions hold one), an idempotency key shared by every copy, or a per-account cap can make a race come back clear when the code is not. Send each copy with its own session or key before you call a class clear, and when that is not possible, prove it with a test or a trace.
+- **Long responses.** Sample bodies are cut at 300 characters. Save the full output with `--out`, or read the value you need with `--extract`.
 
 ## Signed events
 

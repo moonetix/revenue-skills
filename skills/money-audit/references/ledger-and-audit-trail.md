@@ -54,4 +54,4 @@ node scripts/probe.mjs send promo.json --observe me.json    # balance moves; no 
 
 ## Severity
 
-No record for some or all balance changes: medium, or high when the app pays out, because losses cannot be traced or recovered. Unattributed manual adjustments: medium. No reconciliation job: low.
+This is the one rule for records; the severity table in `SKILL.md` defers to it. No record for some or all balance changes: medium, or high when the app pays out, because losses cannot be traced or recovered. Manual adjustments that do not record who made them, when, how much and why: medium. No reconciliation job: low.

@@ -28,7 +28,7 @@ When the network offers a choice, take the HMAC variant. When it offers only a p
 1. **Verify over the strings as they arrived.** Build the text from the received values, after the framework's single URL decoding and before any conversion. A reward of `10.50` that was cast to a number and back is `10.5`, and the hash no longer matches.
 2. **Act only on what the hash covers.** Every value the handler uses must be inside the hash: the user, the transaction id, the amount, the status. If the formula leaves one out, that value is whatever the caller wants it to be. Then either ask the network for a formula that covers it, or take the value from the app's own records. The common way: put the app's own click id into the tracking link, store user and offer under it at click time, and let the postback carry the click id back. The user then comes from the stored click, not from the query string.
 3. **Validate after verifying.** Strict formats for every value: digits for ids and amounts, a short character set for the transaction id, a known list for the status. Formats also limit what a formula without separators can be bent into.
-4. **No bypass.** No `debug=1`, no "skip when the hash is absent", no test mode a caller can switch on. Test with a test key.
+4. **No bypass.** No debug or test parameter, no "skip when the hash is absent", no test mode a caller can switch on. Test with a test key.
 5. **The key has no default** and is checked before the handler runs. One key per network.
 
 ## The handler

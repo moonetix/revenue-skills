@@ -54,7 +54,7 @@ Check the provider's current documentation for the exact scheme. Common ones: an
 ```bash
 node scripts/probe.mjs send webhook.json --drop-header x-signature --observe me.json   # unsigned
 node scripts/probe.mjs send webhook.json --set-body data.amount_cents=1                # tampered, old signature
-node scripts/probe.mjs send postback.json --drop-query hash --set-query debug=1        # bypass switch
+node scripts/probe.mjs send postback.json --drop-query hash --set-query NAME=VALUE     # a bypass switch the handler reads
 node scripts/probe.mjs send postback.json --set-query reward=99999                     # field outside the hash
 ```
 

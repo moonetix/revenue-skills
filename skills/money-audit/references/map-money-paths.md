@@ -46,6 +46,10 @@ Do not stop at HTTP routes. Check:
 | Repeat protection | Unique key, state check, idempotency key, none |
 | Atomicity | One statement, a transaction, or separate steps with I/O in between |
 
+## A library instead of an app
+
+When the target is a library (a ledger, a referral engine, a payment client), there are no routes. Each public function that credits, debits, pays or reverses is a row of the map, and the caller is the application that integrates the library. Fill the Caller and Trusts columns with what the library assumes about that caller: which values it accepts unchecked (account ids, amounts, timestamps), whether calls must be serialized, which store or connection it is given. Read the README and the type definitions for the duties the library hands to its caller. A duty that is documented and that the library's own stores and examples meet is not a finding; note it if it is easy to miss. A duty that is not documented, or that a shipped store or example breaks, is a finding. Prove findings with a failing test in the library's own test runner, or with a small script under `money-audit/evidence/`, since there is no app to probe. Use `environment` to say which runtime and versions the proofs ran on, which stores they used, and what could not be run, such as a database server.
+
 ## Also note, once
 
 - **How balances are stored:** one mutable column, a ledger of entries, or both.

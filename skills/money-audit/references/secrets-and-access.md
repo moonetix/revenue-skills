@@ -32,7 +32,7 @@ def transfer(body: TransferIn, user=Depends(current_user)):
 
 The same flaw as a read: `GET /api/wallets/{id}`, `/orders/{id}`, `/payouts/{id}` returning any account's data, or accepting changes to it, with no check that the id belongs to the session.
 
-**An admin endpoint with user-level protection.** A balance adjustment or refund route that checks only that someone is signed in, or checks a role stored in something the user can edit. Also look for the absence of limits and of a record of who did what.
+**An admin endpoint with user-level protection.** A balance adjustment or refund route that checks only that someone is signed in, or checks a role stored in something the user can edit. Also look for the absence of limits. A route that staff alone can reach but that records no actor is a `ledger-and-audit-trail` finding, rated by the rule in that class.
 
 **Routes left over from development.** `/api/test/add-credits`, `/debug/set-balance`, a seed endpoint, a GraphQL mutation used by a test harness. If the route exists in production code and is reachable, it is a finding regardless of intent.
 

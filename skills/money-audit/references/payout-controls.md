@@ -26,6 +26,8 @@ Look for a minimum, a maximum per request, a cap per day, and a cap for new acco
 
 **Paid before recorded, or recorded before paid, with no way back.** The provider is called first and the balance is reduced afterwards (see balance races). Or the balance is reduced, the provider call fails, and nothing returns the funds. Or a timeout is treated as failure, the funds are returned, and the provider pays anyway.
 
+**A balance check on a view that misses later debits.** The check reads the balance as of a time, or through a filter (entries dated up to the request, one status, one currency), while the debits it must account for can sit outside that view. A payout stamped earlier than a payout or clawback already recorded then passes, because the later-dated debit is not part of the as-of balance, and the account goes negative. The amount a payout is compared with must count every debit already recorded, whatever its date or status. A reporting function such as `balance(at)` is not a spending check. When the dates come from the caller, rate it by how easily the caller produces them out of order: clocks that differ between servers, retries, requests processed later than they were made.
+
 **No idempotency key to the provider.** A retried request, a double click or a worker restart creates a second transfer for the same payout.
 
 **A status with no rules.** The payout row has a status column that any code path can set to anything. Look for transitions that should be impossible: paid to pending, failed to paid without a new provider call, a refund of a payout that was already refunded.
