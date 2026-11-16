@@ -17,7 +17,7 @@ const ENV = {
   STRIPE_WEBHOOK_SECRET: SECRET,
   ADMIN_KEY: ADMIN,
   GIFTLY_API_URL: `http://127.0.0.1:${giftlyPort}`,
-  GIFTLY_API_KEY: 'giftly_trial_key',
+  GIFTLY_API_KEY: trialSecret('giftly_'),
   MOONETIX_APP_ID: APP_ID,
   MOONETIX_POSTBACK_KEY: KEY,
   MOONETIX_LINK_SALT: SALT,

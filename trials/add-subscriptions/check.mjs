@@ -317,10 +317,10 @@ if (!app.started) {
     const claimed = { ...invoice, status: 'paid', amount_paid: 499 };
     const active = { ...stripe.subscription(s.id), status: 'active' };
     const attempts = [
-      event('invoice.paid', claimed, { secret: 'whsec_some_other_secret_000000000' }),
+      event('invoice.paid', claimed, { secret: trialSecret('whsec_') }),
       event('invoice.paid', claimed, { sign: false }),
       event('invoice.paid', claimed, { age: 600 }),
-      event('customer.subscription.updated', active, { secret: 'whsec_some_other_secret_000000000' }),
+      event('customer.subscription.updated', active, { secret: trialSecret('whsec_') }),
     ];
     for (const request of attempts) {
       const res = await t.send(request);

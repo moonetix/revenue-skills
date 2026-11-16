@@ -15,7 +15,7 @@ const ENV = {
   REWARDLY_POSTBACK_KEY: KEY,
   ADMIN_KEY: ADMIN,
   LLM_API_URL: `http://127.0.0.1:${llmPort}`,
-  LLM_API_KEY: 'llm_trial_key',
+  LLM_API_KEY: trialSecret('llm_'),
   LLM_TIMEOUT_MS: '2000',
 };
 const cost = (input, output) => Math.ceil((input + 10 * output) / 100);

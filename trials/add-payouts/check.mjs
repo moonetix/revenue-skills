@@ -16,7 +16,7 @@ const ENV = {
   REWARDLY_POSTBACK_KEY: KEY,
   ADMIN_KEY: ADMIN,
   GIFTLY_API_URL: `http://127.0.0.1:${giftlyPort}`,
-  GIFTLY_API_KEY: 'giftly_trial_key',
+  GIFTLY_API_KEY: trialSecret('giftly_'),
   PAYOUT_HOLD_SECONDS: String(HOLD),
 };
 const r = report('add-payouts');

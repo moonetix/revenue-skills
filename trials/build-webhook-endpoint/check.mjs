@@ -77,7 +77,7 @@ if (!app.started) {
 
   await r.check('W04', 'an event signed with another secret is refused', async () => {
     const { user, order } = await fresh();
-    const request = stripeEvent(app.base, 'whsec_some_other_secret_000000000', 'checkout.session.completed', session(order));
+    const request = stripeEvent(app.base, trialSecret('whsec_'), 'checkout.session.completed', session(order));
     return refused(request, user);
   });
 
