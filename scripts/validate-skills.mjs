@@ -26,6 +26,10 @@ function parseFrontmatter(text) {
     const nested = /^ {2}([\w-]+):\s*(.*)$/.exec(line);
     const top = /^([\w-]+):\s*(.*)$/.exec(line);
     const unquote = (v) => v.replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1');
+    // A plain (unquoted) YAML scalar may not contain ": " or " #"; strict parsers reject the first and
+    // cut the value at the second, so the skill would fail to load in some agents.
+    const plain = (v) => !/^["']/.test(v) && (/: /.test(v) || / #/.test(v) || /:$/.test(v));
+    if ((nested && plain(nested[2])) || (top && plain(top[2]))) return null;
     if (nested && parent) data[parent][nested[1]] = unquote(nested[2]);
     else if (top && top[2] === '') data[(parent = top[1])] = {};
     else if (top) {
@@ -51,7 +55,7 @@ export function validateSkill(dir) {
   if (!existsSync(skillFile)) return [`${name}: SKILL.md is missing`];
   const text = readFileSync(skillFile, 'utf8');
   const parsed = parseFrontmatter(text);
-  if (!parsed) return [`${name}: SKILL.md has no readable frontmatter`];
+  if (!parsed) return [`${name}: SKILL.md has no readable frontmatter (a value with ": " or " #" must be quoted)`];
   const { data, body } = parsed;
 
   if (data.name !== name) fail(`frontmatter name "${data.name}" must equal the folder name`);

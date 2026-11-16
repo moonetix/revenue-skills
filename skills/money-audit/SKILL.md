@@ -1,11 +1,11 @@
 ---
 name: money-audit
-description: Audit the code paths where an app handles money, credits, points or rewards, and report the bugs that lose money, each with the exact file and line, the quoted code, and a proof: a request, a test or a code trace. Use when the user asks to audit, review or pen-test payments, payment webhooks, postbacks, balances, wallets, credits, coupons, referrals, refunds or payouts, asks whether users can cheat or farm the system, or is about to launch something that charges or pays out. Also use to check one money-handling change before it ships, or one provider integration such as a Stripe, Paddle, Lemon Squeezy, PayPal or RevenueCat webhook, App Store server notifications or Google Play real-time developer notifications.
+description: Audit the code paths where an app handles money, credits, points or rewards, and report the bugs that lose money, each with the exact file and line, the quoted code, and a proof (a request, a test or a code trace). Use when the user asks to audit, review or pen-test payments, payment webhooks, postbacks, balances, wallets, credits, coupons, referrals, refunds or payouts, asks whether users can cheat or farm the system, or is about to launch something that charges or pays out. Also use to check one money-handling change before it ships, or one provider integration such as a Stripe, Paddle, Lemon Squeezy, PayPal or RevenueCat webhook, App Store server notifications or Google Play real-time developer notifications.
 license: MIT
 compatibility: The bundled scripts need Node 20 or newer. Probes are sent only to an app running on the local machine.
 metadata:
   author: moonetix
-  version: "1.3.2"
+  version: "1.3.3"
 ---
 
 # Money audit

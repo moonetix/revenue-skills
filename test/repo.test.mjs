@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { validateAll } from '../scripts/validate-skills.mjs';
+import { validateAll, validateSkill } from '../scripts/validate-skills.mjs';
 import { CLASSES } from '../skills/money-audit/scripts/validate-findings.mjs';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -225,5 +226,20 @@ test('trials/ holds no machine paths', () => {
     assert.doesNotMatch(text, /(?<![\w.])\/(?:root|home|tmp|Users|var|opt|private|mnt|srv)\//, file);
     assert.doesNotMatch(text, /\b[A-Z]:\\/, file);
     assert.doesNotMatch(text, /\bflock\b|heavy\.lock|\.scratch/, file);
+  }
+});
+
+test('a frontmatter value with an unquoted ": " is rejected, because strict YAML parsers cannot read it', () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'skill-'));
+  try {
+    const skill = path.join(dir, 'colon-skill');
+    mkdirSync(skill);
+    const description = 'Checks a thing in a project and reports each problem with a proof: a request or a trace. Use when the user asks for this check in their own code.';
+    writeFileSync(path.join(skill, 'SKILL.md'), `---\nname: colon-skill\ndescription: ${description}\n---\n\n# Colon skill\n`);
+    assert.match(validateSkill(skill).join('\n'), /no readable frontmatter/);
+    writeFileSync(path.join(skill, 'SKILL.md'), `---\nname: colon-skill\ndescription: "${description}"\n---\n\n# Colon skill\n`);
+    assert.doesNotMatch(validateSkill(skill).join('\n'), /no readable frontmatter/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
   }
 });
