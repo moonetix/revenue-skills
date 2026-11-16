@@ -22,7 +22,7 @@ test('the plugin branch holds fewer than 150 files and nothing from the practice
   assert.ok(files.length < MAX_FILES, `${files.length} files`);
   assert.equal(MAX_FILES, 150);
   for (const file of files) {
-    assert.match(file, /^(\.claude-plugin\/|skills\/|assets\/icon\.png$|README\.md$|LICENSE$|SECURITY\.md$)/, file);
+    assert.match(file, /^(plugin\.json$|\.claude-plugin\/|skills\/|assets\/icon\.png$|README\.md$|LICENSE$|SECURITY\.md$)/, file);
     assert.doesNotMatch(file, /^(playground|trials|examples|site)\//, file);
   }
   for (const name of readdirSync(path.join(root, 'skills'))) assert.ok(files.includes(`skills/${name}/SKILL.md`), name);

@@ -1,7 +1,7 @@
 name: Plugin branch
 
-# Rebuilds the `plugin` branch from a release tag: only .claude-plugin/, skills/, a short README,
-# LICENSE and SECURITY.md, so the plugin does not ship the practice app, the trials or the demo.
+# Rebuilds the `plugin` branch from a release tag: only plugin.json, .claude-plugin/, skills/, the icon,
+# a short README, LICENSE and SECURITY.md, so the plugin does not ship the practice app, the trials or the demo.
 # The push names refs/heads/plugin explicitly; no other branch and no tag is written.
 
 on:

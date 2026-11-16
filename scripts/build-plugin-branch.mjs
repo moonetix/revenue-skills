@@ -11,7 +11,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const MAX_FILES = 150;
-export const COPIED = ['.claude-plugin', 'skills', 'assets/icon.png', 'LICENSE', 'SECURITY.md'];
+export const COPIED = ['plugin.json', '.claude-plugin', 'skills', 'assets/icon.png', 'LICENSE', 'SECURITY.md'];
 export const FORBIDDEN = /^(playground|trials|examples|site|test|scripts|docs|_site)\//;
 
 function walk(rel) {

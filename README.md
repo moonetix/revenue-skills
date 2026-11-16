@@ -64,7 +64,7 @@ Other ways to install, and the folder where each agent reads skills in a project
 | Goose | | `.goose/skills/` |
 | Amp | | `.agents/skills/` |
 
-The [installer's agent list](https://github.com/vercel-labs/skills/blob/main/docs/agents.md) has the other agents and the global folders. The `plugin` branch holds only the Claude Code plugin files, rebuilt from each release tag by [a workflow](.github/workflows/plugin-branch.yml); `/plugin marketplace add moonetix/revenue-skills@plugin` installs from it.
+The [installer's agent list](https://github.com/vercel-labs/skills/blob/main/docs/agents.md) has the other agents and the global folders. The `plugin` branch holds only the plugin files (the Agent Plugins and Claude Code manifests, the skills and the icon), rebuilt from each release tag by [a workflow](.github/workflows/plugin-branch.yml); `/plugin marketplace add moonetix/revenue-skills@plugin` installs from it.
 
 ## Pick by situation
 
