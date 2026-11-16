@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.3.4] - 2026-11-16
+
+### Changed
+
+- Clearer wording where a skill sentence read like an instruction to override the agent's judgement out of context: "ask the user only what the code cannot tell you" in seven builder skills, "accept" instead of "do not refuse" for fractional offerwall rewards and old App Store notifications, and a few similar phrases. NVIDIA SkillSpector, which a plugin catalog runs on submissions, flagged them. No rule changed.
+
 ## [1.3.3] - 2026-11-16
 
 ### Fixed
@@ -132,7 +138,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - One exploit per planted bug, run in CI against both versions of the app.
 - Plugin manifests for Claude Code and Codex, and `evals/evals.json` for every skill.
 
-[Unreleased]: https://github.com/moonetix/revenue-skills/compare/v1.3.3...HEAD
+[Unreleased]: https://github.com/moonetix/revenue-skills/compare/v1.3.4...HEAD
+[1.3.4]: https://github.com/moonetix/revenue-skills/compare/v1.3.3...v1.3.4
 [1.3.3]: https://github.com/moonetix/revenue-skills/compare/v1.3.2...v1.3.3
 [1.3.2]: https://github.com/moonetix/revenue-skills/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/moonetix/revenue-skills/compare/v1.3.0...v1.3.1

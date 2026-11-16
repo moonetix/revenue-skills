@@ -5,7 +5,7 @@ license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.3.3"
+  version: "1.3.4"
 ---
 
 # Add payouts
@@ -14,7 +14,7 @@ This skill produces the path on which value leaves the app as money: a payout ro
 
 ## Before writing code
 
-Read the project first. Do not ask the user what the code can tell you.
+Read the project first, and ask the user only what the code cannot tell you.
 
 - **Stack and database.** Language, framework, database engine, migration tool, test framework, job scheduler or queue, and how the project opens a transaction.
 - **The balance.** A ledger with a posting function, or a bare balance column. Which kinds of entries exist and which of them are earned, bought or given away. This decides what can be withdrawn.

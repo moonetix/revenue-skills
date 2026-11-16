@@ -5,7 +5,7 @@ license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.3.3"
+  version: "1.3.4"
 ---
 
 # Handle refunds and reversals
@@ -16,7 +16,7 @@ This skill produces the code that follows money when it goes back: a refund, a c
 
 ## Before writing code
 
-Read the project first. Do not ask the user what the code can tell you.
+Read the project first, and ask the user only what the code cannot tell you.
 
 - **Stack.** Language, framework, database, migration tool, test framework, how a transaction is opened.
 - **How value gets in.** Every path that credits: purchases, subscriptions, conversions, bonuses. For each, the record it leaves: an order row, a ledger entry with its kind and reference, a transaction id. A credit that leaves no record cannot be reversed, and step 2 has to fix that first.

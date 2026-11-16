@@ -5,7 +5,7 @@ license: MIT
 compatibility: The verification step needs Node 20 or newer to run the bundled probe script.
 metadata:
   author: moonetix
-  version: "1.3.3"
+  version: "1.3.4"
 ---
 
 # Add a referral program
@@ -14,7 +14,7 @@ This skill produces a referral program that pays for new customers and not for n
 
 ## Before writing code
 
-Read the project first. Do not ask the user what the code can tell you.
+Read the project first, and ask the user only what the code cannot tell you.
 
 - **Stack and database.** Language, framework, database engine, migration tool, test framework, job scheduler, and how the project opens a transaction.
 - **Sign-up.** The handler that creates accounts, what it stores about the device and the address, and whether email addresses are verified and normalized.
