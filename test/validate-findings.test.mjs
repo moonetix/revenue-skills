@@ -5,7 +5,7 @@ import path from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { render } from '../skills/money-audit/scripts/render-report.mjs';
-import { CLASSES, validate } from '../skills/money-audit/scripts/validate-findings.mjs';
+import { CLASSES, KEYS, validate } from '../skills/money-audit/scripts/validate-findings.mjs';
 import { score } from '../playground/score.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -125,6 +125,35 @@ test('unknown fields are rejected', () => {
   assert.match(errorsOf((r) => (r.coverage[1].confidence = 'high'))[0], /coverage duplicate-credit: unknown field "confidence"/);
 });
 
+test('a proof is closed: an unknown field is rejected, output_file is allowed on probe and test proofs', () => {
+  assert.match(errorsOf((r) => (r.findings[0].proof.confidence = 'high'))[0], /finding MA-01 proof: unknown field "confidence"/);
+  assert.match(errorsOf((r) => (r.findings[1].proof.steps[0].column = 4))[0], /trace step 1: unknown field "column"/);
+  assert.match(errorsOf((r) => (r.findings[1].proof.output_file = 'routes/promo.mjs'))[0], /proof: unknown field "output_file"/);
+  assert.deepEqual(errorsOf((r) => (r.findings[0].proof.output_file = 'routes/webhooks.mjs')), []);
+  const asTest = (r) => {
+    r.findings[0].proof = { kind: 'test', file: 'routes/webhooks.mjs', command: 'node --test', result: 'The test fails: the unsigned event was credited.', output_file: 'routes/webhooks.mjs' };
+  };
+  assert.deepEqual(errorsOf(asTest), []);
+});
+
+test('the schema and the validator allow the same fields, and every schema object is closed', () => {
+  const schema = JSON.parse(readFileSync(path.join(here, '..', 'skills', 'money-audit', 'assets', 'findings.schema.json'), 'utf8'));
+  const fields = (def) => Object.keys(def.properties).sort();
+  const closed = (def, name) => assert.equal(def.additionalProperties, false, `${name} is open`);
+  const pairs = [
+    [schema, 'report'],
+    [schema.$defs.finding, 'finding'],
+    [schema.$defs.quote, 'quote'],
+    [schema.$defs.step, 'step'],
+    [schema.$defs.coverage, 'coverage'],
+    ...schema.$defs.finding.properties.proof.oneOf.map((variant) => [variant, variant.properties.kind.const]),
+  ];
+  for (const [def, name] of pairs) {
+    closed(def, name);
+    assert.deepEqual(fields(def), [...KEYS[name]].sort(), name);
+  }
+});
+
 test('environment and notes are optional and rendered', () => {
   const report = sample();
   report.environment = 'PORT=8842 node server.mjs, default test configuration, in-memory database.';
@@ -175,4 +204,16 @@ test('scoring against the answer key', () => {
   const offKey = sample();
   offKey.findings[0].class = 'payout-controls';
   assert.deepEqual(score(offKey, key).extra.map((f) => f.id), ['MA-01']);
+});
+
+test('a finding counts for one planted bug at most', () => {
+  const key = JSON.parse(readFileSync(path.join(here, '..', 'playground', 'answers.json'), 'utf8'));
+  // routes/payouts.mjs:14 lies inside three payout-controls bugs (V06, V09, V14).
+  const at = (id) => ({ id, class: 'payout-controls', title: 'Payouts', location: { file: 'routes/payouts.mjs', line: 14 } });
+  const one = score({ findings: [at('MA-01')] }, key);
+  assert.equal(one.found.length, 1);
+  assert.equal(one.onTarget, 1);
+  const three = score({ findings: [at('MA-01'), at('MA-02'), at('MA-03')] }, key);
+  assert.deepEqual(three.found.map((b) => b.id), ['V06', 'V09', 'V14']);
+  assert.deepEqual(three.found.map((b) => b.by).sort(), ['MA-01', 'MA-02', 'MA-03']);
 });

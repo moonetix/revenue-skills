@@ -56,15 +56,15 @@ The audit writes one machine-checked file, `money-audit/findings.json`, and a re
 | `proof` | See below. |
 | `fix` | The smallest change that removes the flaw. |
 
-Fields other than these are rejected.
+Every object in the file is closed: the report, a finding, its location, its proof, each trace step and each coverage entry accept only the fields listed on this page, and the validator rejects any other. The schema follows the same rule.
 
 ### Proof
 
 | `kind` | Required fields |
 | --- | --- |
 | `probe` | `command` (what was run, with placeholders such as `$TOKEN` instead of real tokens), `result` (what it showed, with the numbers). A proof of several steps lists its commands in order, separated by `;`. One run may support more than one finding. Optional `output_file`: a saved copy of the probe output inside the project, for example `money-audit/evidence/ma-01.json`. |
-| `test` | `file` (the test, must exist), `command`, `result`. |
-| `trace` | `steps`: two or more of `{ "file", "line", "snippet", "note" }`, from where the value enters to where money moves. Each snippet is checked like the location. |
+| `test` | `file` (the test, must exist), `command`, `result`. Optional `output_file`, as for `probe`. |
+| `trace` | `steps`: two or more of `{ "file", "line", "snippet", "note" }`, from where the value enters to where money moves. Each snippet is checked like the location. No `output_file`. |
 
 ### Coverage
 

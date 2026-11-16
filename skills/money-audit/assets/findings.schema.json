@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/moonetix/revenue-skills/blob/main/skills/money-audit/assets/findings.schema.json",
   "title": "Money audit findings",
-  "description": "Shape of money-audit/findings.json. scripts/validate-findings.mjs enforces this shape and also checks every quoted snippet against the project files.",
+  "description": "Shape of money-audit/findings.json. Every object is closed: a field not listed here is an error. scripts/validate-findings.mjs applies the same rules and also checks each quoted snippet, test file, output file and examined file against the project.",
   "type": "object",
   "required": ["version", "project", "date", "findings", "coverage"],
   "additionalProperties": false,
@@ -38,10 +38,22 @@
     "quote": {
       "type": "object",
       "required": ["file", "line", "snippet"],
+      "additionalProperties": false,
       "properties": {
         "file": { "type": "string", "description": "Path relative to the project root." },
         "line": { "type": "integer", "minimum": 1 },
         "snippet": { "type": "string", "minLength": 12, "description": "Code copied from that line." }
+      }
+    },
+    "step": {
+      "type": "object",
+      "required": ["file", "line", "snippet", "note"],
+      "additionalProperties": false,
+      "properties": {
+        "file": { "type": "string", "description": "Path relative to the project root." },
+        "line": { "type": "integer", "minimum": 1 },
+        "snippet": { "type": "string", "minLength": 12, "description": "Code copied from that line." },
+        "note": { "type": "string", "minLength": 10, "description": "What happens to the value at this step." }
       }
     },
     "finding": {
@@ -60,38 +72,33 @@
             {
               "type": "object",
               "required": ["kind", "command", "result"],
+              "additionalProperties": false,
               "properties": {
                 "kind": { "const": "probe" },
                 "command": { "type": "string", "minLength": 5 },
                 "result": { "type": "string", "minLength": 20 },
-                "output_file": { "type": "string" }
+                "output_file": { "type": "string", "description": "Saved output of the run, relative to the project root." }
               }
             },
             {
               "type": "object",
               "required": ["kind", "file", "command", "result"],
+              "additionalProperties": false,
               "properties": {
                 "kind": { "const": "test" },
-                "file": { "type": "string" },
+                "file": { "type": "string", "description": "The test, relative to the project root." },
                 "command": { "type": "string", "minLength": 5 },
-                "result": { "type": "string", "minLength": 20 }
+                "result": { "type": "string", "minLength": 20 },
+                "output_file": { "type": "string", "description": "Saved output of the run, relative to the project root." }
               }
             },
             {
               "type": "object",
               "required": ["kind", "steps"],
+              "additionalProperties": false,
               "properties": {
                 "kind": { "const": "trace" },
-                "steps": {
-                  "type": "array",
-                  "minItems": 2,
-                  "items": {
-                    "allOf": [
-                      { "$ref": "#/$defs/quote" },
-                      { "type": "object", "required": ["note"], "properties": { "note": { "type": "string", "minLength": 10 } } }
-                    ]
-                  }
-                }
+                "steps": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/step" } }
               }
             }
           ]

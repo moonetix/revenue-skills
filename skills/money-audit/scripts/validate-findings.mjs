@@ -25,7 +25,8 @@ const PROOFS = ['probe', 'test', 'trace'];
 const LINE_SLACK = 2;
 const MIN_SNIPPET = 12;
 
-const KEYS = {
+// The fields each object may carry. assets/findings.schema.json lists the same ones.
+export const KEYS = {
   report: ['version', 'project', 'date', 'environment', 'notes', 'findings', 'coverage'],
   finding: ['id', 'class', 'severity', 'title', 'location', 'impact', 'proof', 'fix'],
   quote: ['file', 'line', 'snippet'],
