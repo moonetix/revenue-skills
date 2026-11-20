@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.3.6] - 2026-11-20
+
 ### Changed
 
 - `add-subscriptions` names Stripe API version `2026-11-18.endive`, released on 2026-11-18 with no breaking change to Billing, as the current version, and its Stripe client snippets pin it. The trials keep `2026-10-28.endive`, the version their task fixes.
@@ -149,7 +151,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - One exploit per planted bug, run in CI against both versions of the app.
 - Plugin manifests for Claude Code and Codex, and `evals/evals.json` for every skill.
 
-[Unreleased]: https://github.com/moonetix/revenue-skills/compare/v1.3.5...HEAD
+[Unreleased]: https://github.com/moonetix/revenue-skills/compare/v1.3.6...HEAD
+[1.3.6]: https://github.com/moonetix/revenue-skills/compare/v1.3.5...v1.3.6
 [1.3.5]: https://github.com/moonetix/revenue-skills/compare/v1.3.4...v1.3.5
 [1.3.4]: https://github.com/moonetix/revenue-skills/compare/v1.3.3...v1.3.4
 [1.3.3]: https://github.com/moonetix/revenue-skills/compare/v1.3.2...v1.3.3
