@@ -1,0 +1,36 @@
+name: Provider watch
+
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - name: Compare the provider facts the skills rely on with what the providers publish
+        run: node scripts/provider-watch.mjs --out report.md
+      - name: Open or update the provider watch issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ ! -s report.md ]; then echo "No changes."; exit 0; fi
+          gh label create provider-watch --color 0e8a16 --description "A provider changed something the skills describe" 2>/dev/null || true
+          number=$(gh issue list --label provider-watch --state open --json number --jq '.[0].number')
+          if [ -n "$number" ]; then
+            gh issue edit "$number" --body-file report.md
+          else
+            gh issue create --title "Provider changes to review" --label provider-watch --body-file report.md
+          fi

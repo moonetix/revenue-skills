@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- A weekly provider watch (`scripts/provider-watch.mjs`, `.github/workflows/provider-watch.yml`). It compares the Stripe API version, the Google Play subscription notification types and the official Stripe, Paddle and Apple SDK releases with what the skills were checked against (`scripts/provider-watch.json`), and opens an issue that names the files to re-check when one changes. A test keeps the recorded values equal to the ones the skills state.
+
 ## [1.3.6] - 2026-11-20
 
 ### Changed
