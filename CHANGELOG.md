@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed
+
+- `add-subscriptions` names Stripe API version `2026-11-18.endive`, released on 2026-11-18 with no breaking change to Billing, as the current version, and its Stripe client snippets pin it. The trials keep `2026-10-28.endive`, the version their task fixes.
+- The Google Play notification table in `add-subscriptions` lists type 21, `SUBSCRIPTION_PLAN_TRANSITION_UPDATED`, which the RTDN reference now documents. Like the other rare types, the handler reads the current state from the API.
+
 ## [1.3.5] - 2026-11-16
 
 ### Added
